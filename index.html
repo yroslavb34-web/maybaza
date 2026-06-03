@@ -15,7 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#12141b;--bg2:#0a1020;--glass:rgba(255,255,255,.045);--glass-2:rgba(255,255,255,.07);
+  --bg:#070b14;--bg2:#0a1020;--glass:rgba(255,255,255,.045);--glass-2:rgba(255,255,255,.07);
   --stroke:rgba(255,255,255,.09);--stroke-2:rgba(255,255,255,.14);--txt:#eaf0f7;--muted:#93a1b3;--faint:#5d6b7e;
   --a1:#38bdf8;--a2:#818cf8;--accent:linear-gradient(135deg,#38bdf8 0%,#818cf8 100%);
   --pos:#34d399;--neg:#fb7185;--warn:#fbbf24;--r:18px;--r-sm:13px;
@@ -178,23 +178,8 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 </head>
 <body>
 
-<!-- ===== AUTH ===== -->
-<div class="auth on" id="auth">
-  <div class="auth-card">
-    <div class="logo big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-    <h1>Отчётность</h1>
-    <p class="auth-sub">учёт рекламы по сети каналов</p>
-    <div class="cfg-warn hidden" id="cfgWarn"></div>
-    <div class="field"><label>Почта</label><input id="au_email" type="email" autocomplete="email" placeholder="you@mail.com"></div>
-    <div class="field"><label>Пароль</label><input id="au_pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-    <div class="auth-err" id="au_err"></div>
-    <button class="btn btn-primary" id="au_submit" style="width:100%">Войти</button>
-    <p class="auth-toggle" id="au_toggleWrap">Первый раз? <a id="au_toggle">Создать аккаунт</a></p>
-  </div>
-</div>
-
 <!-- ===== APP ===== -->
-<div class="app" style="display:none">
+<div class="app">
   <header class="appbar">
     <div class="brand">
       <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
@@ -249,13 +234,13 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 /* ============================================================
    НАСТРОЙКА: вставь свои значения из Supabase → Project Settings → API
    ============================================================ */
-const SUPABASE_URL      = 'https://eoregtvvmzrruztcrysmz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmVndHZ2bXpycnV6dGNyeW16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTY4MTQsImV4cCI6MjA5NjA3MjgxNH0.Kxk-r8S65zRGzwEsbs6Zs4XDcp0SE4dIlydnZ_DzxfE';
+const SUPABASE_URL      = 'https://ВАШ-ПРОЕКТ.supabase.co';
+const SUPABASE_ANON_KEY = 'ВАШ-ANON-PUBLIC-КЛЮЧ';
 /* ============================================================ */
 
 const $=id=>document.getElementById(id);
 const val=id=>{const e=$(id);return e?e.value:'';};
-let sb=null, user=null, authMode='login';
+let sb=null, user=null;
 let state={channels:[],sales:[],expenses:[],settings:{brand:'Моя сеть',currency:'₽'}};
 let period='month';
 
@@ -301,60 +286,13 @@ const IC={
    AUTH
    ============================================================ */
 function initSupabase(){
-  if(SUPABASE_URL.indexOf('ВАШ')>=0 || SUPABASE_ANON_KEY.indexOf('ВАШ')>=0){
-    $('cfgWarn').classList.remove('hidden');
-    $('cfgWarn').innerHTML='Открой файл и впиши свои <code>SUPABASE_URL</code> и <code>SUPABASE_ANON_KEY</code> вверху &lt;script&gt; — берутся в Supabase → Project Settings → API.';
-    return false;
-  }
-  if(!window.supabase||!window.supabase.createClient){
-    $('cfgWarn').classList.remove('hidden');
-    $('cfgWarn').textContent='Не загрузилась библиотека Supabase. Проверь интернет / доступ к cdn.jsdelivr.net.';
-    return false;
-  }
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-  return true;
 }
 async function initAuth(){
-  if(!initSupabase())return;
-  const {data}=await sb.auth.getSession();
-  if(data&&data.session){ user=data.session.user; enterApp(); } else { showAuth(); }
-  sb.auth.onAuthStateChange((_e,sess)=>{
-    if(sess&&sess.user){ if(!user){ user=sess.user; enterApp(); } }
-    else { user=null; showAuth(); }
-  });
+  initSupabase();
+  loadAll();
 }
-function showAuth(){ $('auth').classList.add('on'); document.querySelector('.app').style.display='none'; }
-function enterApp(){ $('auth').classList.remove('on'); document.querySelector('.app').style.display=''; loadAll(); }
-function authErr(m){ $('au_err').textContent=m||''; }
-function setAuthMode(m){
-  authMode=m;
-  $('au_submit').textContent = m==='login'?'Войти':'Создать аккаунт';
-  $('au_toggleWrap').innerHTML = m==='login'?'Первый раз? <a id="au_toggle">Создать аккаунт</a>':'Уже есть аккаунт? <a id="au_toggle">Войти</a>';
-  $('au_pass').setAttribute('autocomplete', m==='login'?'current-password':'new-password');
-  $('au_toggle').addEventListener('click',()=>setAuthMode(m==='login'?'signup':'login'));
-  authErr('');
-}
-const trAuth=m=>{
-  m=(m||'').toLowerCase();
-  if(m.indexOf('invalid login')>=0)return 'Неверная почта или пароль';
-  if(m.indexOf('already registered')>=0||m.indexOf('already been registered')>=0)return 'Такой аккаунт уже есть — войди';
-  if(m.indexOf('password')>=0&&m.indexOf('6')>=0)return 'Пароль минимум 6 символов';
-  if(m.indexOf('email')>=0&&m.indexOf('confirm')>=0)return 'Подтверди почту по ссылке из письма';
-  return m||'Ошибка авторизации';
-};
-async function authSubmit(){
-  const email=val('au_email').trim(), pass=val('au_pass');
-  if(!email||!pass){authErr('Заполни почту и пароль');return;}
-  $('au_submit').disabled=true; const prev=$('au_submit').textContent; $('au_submit').textContent='Подождите…';
-  let res;
-  if(authMode==='login') res=await sb.auth.signInWithPassword({email,password:pass});
-  else res=await sb.auth.signUp({email,password:pass});
-  $('au_submit').disabled=false; $('au_submit').textContent=prev;
-  if(res.error){authErr(trAuth(res.error.message));return;}
-  if(authMode==='signup'&&!(res.data&&res.data.session)){ authErr('Аккаунт создан. Если включено подтверждение почты — перейди по ссылке из письма, потом войди.'); setAuthMode('login'); return; }
-  // успех — onAuthStateChange сам откроет приложение
-}
-async function doSignOut(){ closeSheet(); await sb.auth.signOut(); }
+async function doSignOut(){}
 
 /* ============================================================
    DATA (Supabase)
@@ -365,13 +303,13 @@ async function loadAll(){
       sb.from('channels').select('*').order('created_at',{ascending:true}),
       sb.from('sales').select('*').order('date',{ascending:false}),
       sb.from('expenses').select('*').order('date',{ascending:false}),
-      sb.from('settings').select('*').eq('user_id',user.id).maybeSingle(),
+      sb.from('settings').select('*').maybeSingle(),
     ]);
     if(ch.error||sl.error||ex.error){ toast('Ошибка загрузки: '+((ch.error||sl.error||ex.error).message)); }
     state.channels=ch.data||[]; state.sales=sl.data||[]; state.expenses=ex.data||[];
     if(st&&st.data){ state.settings={brand:st.data.brand||'Моя сеть',currency:st.data.currency||'₽'}; }
     renderAll();
-  }catch(e){ toast('Сеть недоступна'); }
+  }catch(e){ toast('Сеть недоступна: '+e.message); }
 }
 async function reload(which){
   if(which==='channels'){const r=await sb.from('channels').select('*').order('created_at',{ascending:true});if(!r.error)state.channels=r.data||[];}
@@ -595,7 +533,7 @@ function openSettings(){
 }
 async function saveSettings(){
   const brand=val('set_brand').trim()||'Моя сеть', currency=val('set_cur').trim()||'₽';
-  const res=await sb.from('settings').upsert({user_id:user.id,brand:brand,currency:currency,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  const res=await sb.from('settings').upsert({id:1,brand:brand,currency:currency,updated_at:new Date().toISOString()},{onConflict:'id'});
   if(res.error){toast('Ошибка: '+res.error.message);return;}
   state.settings={brand:brand,currency:currency}; renderAll(); closeSheet(); toast('Сохранено');
 }
@@ -629,9 +567,9 @@ async function importData(file){
 }
 async function clearAll(){
   if(!confirm('Удалить ВСЕ данные без возможности восстановления? Сначала лучше сделать экспорт.'))return;
-  await sb.from('sales').delete().eq('user_id',user.id);
-  await sb.from('expenses').delete().eq('user_id',user.id);
-  await sb.from('channels').delete().eq('user_id',user.id);
+  await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  await sb.from('expenses').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  await sb.from('channels').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await loadAll(); closeSheet(); toast('Очищено');
 }
 
@@ -658,12 +596,6 @@ $('addExp').addEventListener('click',()=>openExpenseForm());
 $('addCh').addEventListener('click',()=>openChannelForm());
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();});
-
-$('au_submit').addEventListener('click',authSubmit);
-$('au_toggle').addEventListener('click',()=>setAuthMode('signup'));
-$('au_pass').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit();});
-$('au_email').addEventListener('input',()=>authErr(''));
-$('au_pass').addEventListener('input',()=>authErr(''));
 
 initAuth();
 </script>
