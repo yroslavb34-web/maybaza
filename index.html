@@ -159,26 +159,10 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 
 .toast{position:fixed;bottom:calc(108px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);z-index:90;background:#0f1727;border:1px solid var(--stroke-2);color:var(--txt);font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:13px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* Auth */
-.auth{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:24px}
-.auth.on{display:flex}
-.auth-card{width:100%;max-width:360px;background:var(--glass);border:1px solid var(--stroke);border-radius:24px;padding:30px 24px 26px;box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:rise .5s ease both;text-align:center}
-.auth-card .logo.big{width:56px;height:56px;border-radius:16px;margin:0 auto 16px}
-.auth-card .logo.big svg{width:30px;height:30px}
-.auth-card h1{font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:-.02em}
-.auth-sub{font-size:12.5px;color:var(--faint);margin:6px 0 22px}
-.auth-card .field{text-align:left}
-.auth-err{font-size:12.5px;color:var(--neg);min-height:18px;margin:2px 2px 12px;text-align:left;line-height:1.4}
-.auth-toggle{font-size:13px;color:var(--muted);margin-top:16px}
-.auth-toggle a{color:var(--a1);cursor:pointer;font-weight:600}
-.cfg-warn{text-align:left;font-size:12px;line-height:1.55;color:var(--warn);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:12px;padding:13px;margin-bottom:18px}
-.cfg-warn code{font-size:11px;background:rgba(0,0,0,.35);padding:1px 5px;border-radius:5px;word-break:break-all}
 </style>
 </head>
 <body>
 
-<!-- ===== APP ===== -->
 <div class="app">
   <header class="appbar">
     <div class="brand">
@@ -233,14 +217,15 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 <script>
 /* ============================================================
    НАСТРОЙКА: вставь свои значения из Supabase → Project Settings → API
+   (те же, что уже работали на Vercel)
    ============================================================ */
-const SUPABASE_URL      = 'https://ВАШ-ПРОЕКТ.supabase.co';
-const SUPABASE_ANON_KEY = 'ВАШ-ANON-PUBLIC-КЛЮЧ';
+const SUPABASE_URL      = 'https://eoregtvvmzrruztcrysmz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmVndHZ2bXpycnV6dGNyeW16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTY4MTQsImV4cCI6MjA5NjA3MjgxNH0.Kxk-r8S65zRGzwEsbs6Zs4XDcp0SE4dIlydnZ_DzxfE';
 /* ============================================================ */
 
 const $=id=>document.getElementById(id);
 const val=id=>{const e=$(id);return e?e.value:'';};
-let sb=null, user=null;
+let sb=null;
 let state={channels:[],sales:[],expenses:[],settings:{brand:'Моя сеть',currency:'₽'}};
 let period='month';
 
@@ -248,7 +233,6 @@ const FORMATS={post24:'Пост 1/24',perm:'Без удаления',pin:'Зак
 const CATS=['Контент','Дизайн','Закупка трафика','Сервисы и подписки','Налоги и комиссии','Прочее'];
 
 /* ---------- helpers ---------- */
-const uid=()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'id'+Date.now();
 const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
 function money(n){const v=Math.round(Number(n)||0);return (v<0?'−':'')+nf.format(Math.abs(v))+' '+state.settings.currency;}
 function parseAmt(s){return Math.abs(parseFloat(String(s).replace(/\s/g,'').replace(',','.')))||0;}
@@ -279,23 +263,26 @@ const IC={
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
-  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
 };
 
 /* ============================================================
-   AUTH
+   ПОДКЛЮЧЕНИЕ
    ============================================================ */
 function initSupabase(){
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  if(SUPABASE_URL.indexOf('ВАШ')>=0 || SUPABASE_ANON_KEY.indexOf('ВАШ')>=0){
+    toast('Впиши ключи Supabase в начало скрипта');
+    return false;
+  }
+  if(!window.supabase || !window.supabase.createClient){
+    toast('Библиотека Supabase не загрузилась');
+    return false;
+  }
+  try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); return true; }
+  catch(e){ toast('Неверный URL Supabase'); return false; }
 }
-async function initAuth(){
-  initSupabase();
-  loadAll();
-}
-async function doSignOut(){}
 
 /* ============================================================
-   DATA (Supabase)
+   ДАННЫЕ (Supabase)
    ============================================================ */
 async function loadAll(){
   try{
@@ -309,7 +296,7 @@ async function loadAll(){
     state.channels=ch.data||[]; state.sales=sl.data||[]; state.expenses=ex.data||[];
     if(st&&st.data){ state.settings={brand:st.data.brand||'Моя сеть',currency:st.data.currency||'₽'}; }
     renderAll();
-  }catch(e){ toast('Сеть недоступна: '+e.message); }
+  }catch(e){ toast('Сеть недоступна: '+(e.message||e)); }
 }
 async function reload(which){
   if(which==='channels'){const r=await sb.from('channels').select('*').order('created_at',{ascending:true});if(!r.error)state.channels=r.data||[];}
@@ -318,7 +305,7 @@ async function reload(which){
 }
 
 /* ============================================================
-   NAVIGATION
+   НАВИГАЦИЯ
    ============================================================ */
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===name));
@@ -327,7 +314,7 @@ function showScreen(name){
 }
 
 /* ============================================================
-   RENDER
+   РЕНДЕР
    ============================================================ */
 function renderAll(){ $('brandName').textContent=state.settings.brand||'Моя сеть'; renderDash(); renderSales(); renderExp(); renderCh(); }
 
@@ -398,7 +385,7 @@ function renderCh(){
 }
 
 /* ============================================================
-   SHEET CORE
+   ШТОРКА
    ============================================================ */
 function openSheet(html){ $('sheetInner').innerHTML=html; $('sheet').classList.add('open'); document.body.style.overflow='hidden'; }
 function closeSheet(){ $('sheet').classList.remove('open'); document.body.style.overflow=''; }
@@ -414,7 +401,7 @@ function bindSeg(scope){
 }
 
 /* ============================================================
-   FORMS
+   ФОРМЫ
    ============================================================ */
 function openSaleForm(id){
   const ed=id?state.sales.find(x=>x.id===id):null;
@@ -508,7 +495,7 @@ async function delRow(table,id,msg){
 }
 
 /* ============================================================
-   SETTINGS / EXPORT / IMPORT
+   НАСТРОЙКИ / ЭКСПОРТ / ИМПОРТ
    ============================================================ */
 function openSettings(){
   openSheet(sheetHead('Настройки')+
@@ -518,17 +505,15 @@ function openSettings(){
     '<div class="set-act" style="margin-top:18px">'+
       '<button class="set-btn" id="set_export">'+IC.download+' Экспорт данных (резервная копия)</button>'+
       '<button class="set-btn" id="set_import">'+IC.upload+' Импорт из файла</button>'+
-      '<button class="set-btn" id="set_logout">'+IC.logout+' Выйти из аккаунта</button>'+
       '<button class="set-btn danger" id="set_clear">'+IC.trash+' Очистить все данные</button>'+
     '</div>'+
     '<input type="file" id="set_file" accept="application/json,.json" class="hidden">'+
-    '<p class="set-note">Вход: '+esc(user?user.email:'')+'. Данные в облаке Supabase, синхронизируются на всех устройствах. Экспорт — резервная копия в JSON.</p>');
+    '<p class="set-note">Данные в облачной базе Supabase — общие для всех устройств. Экспорт — резервная копия в JSON.</p>');
   bindClose();
   $('set_save').addEventListener('click',saveSettings);
   $('set_export').addEventListener('click',exportData);
   $('set_import').addEventListener('click',()=>$('set_file').click());
   $('set_file').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0]);});
-  $('set_logout').addEventListener('click',()=>{if(confirm('Выйти из аккаунта?'))doSignOut();});
   $('set_clear').addEventListener('click',clearAll);
 }
 async function saveSettings(){
@@ -561,20 +546,21 @@ async function importData(file){
       const rows=d.expenses.map(e=>({amount:e.amount||0,date:String(e.date||today()).slice(0,10),category:e.category||'Прочее',note:e.note||''}));
       const ins=await sb.from('expenses').insert(rows); if(ins.error)throw ins.error;
     }
-    if(d.settings){ await sb.from('settings').upsert({user_id:user.id,brand:d.settings.brand||'Моя сеть',currency:d.settings.currency||'₽'},{onConflict:'user_id'}); }
+    if(d.settings){ await sb.from('settings').upsert({id:1,brand:d.settings.brand||'Моя сеть',currency:d.settings.currency||'₽'},{onConflict:'id'}); }
     await loadAll(); closeSheet(); toast('Импортировано');
   }catch(e){ toast('Ошибка импорта: '+(e.message||e)); }
 }
 async function clearAll(){
   if(!confirm('Удалить ВСЕ данные без возможности восстановления? Сначала лучше сделать экспорт.'))return;
-  await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  await sb.from('expenses').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  await sb.from('channels').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  const DUMMY='00000000-0000-0000-0000-000000000000';
+  await sb.from('sales').delete().neq('id',DUMMY);
+  await sb.from('expenses').delete().neq('id',DUMMY);
+  await sb.from('channels').delete().neq('id',DUMMY);
   await loadAll(); closeSheet(); toast('Очищено');
 }
 
 /* ============================================================
-   INIT
+   СТАРТ
    ============================================================ */
 document.addEventListener('click',e=>{
   const row=e.target.closest('.row[data-id]'); if(!row)return;
@@ -597,7 +583,7 @@ $('addCh').addEventListener('click',()=>openChannelForm());
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();});
 
-initAuth();
+if(initSupabase()) loadAll();
 </script>
 </body>
 </html>
