@@ -12,7 +12,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#070b14;--bg2:#0a1020;--glass:rgba(255,255,255,.045);--glass-2:rgba(255,255,255,.07);
@@ -20,7 +19,8 @@
   --a1:#38bdf8;--a2:#818cf8;--accent:linear-gradient(135deg,#38bdf8 0%,#818cf8 100%);
   --pos:#34d399;--neg:#fb7185;--warn:#fbbf24;--r:18px;--r-sm:13px;
   --shadow:0 18px 50px -20px rgba(0,0,0,.7);
-  --font-d:'Unbounded',-apple-system,system-ui,sans-serif;--font-u:'Onest',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-d:'Unbounded',-apple-system,system-ui,sans-serif;
+  --font-u:'Onest',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -28,6 +28,13 @@ body{font-family:var(--font-u);color:var(--txt);background:var(--bg);overflow-x:
 body::before,body::after{content:"";position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(70px);opacity:.5}
 body::before{width:520px;height:520px;top:-160px;left:-140px;background:radial-gradient(circle,rgba(56,189,248,.32),transparent 65%)}
 body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radial-gradient(circle,rgba(129,140,248,.30),transparent 65%)}
+#appLoader{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
+#appLoader.fade{opacity:0;pointer-events:none}
+.loader-logo{width:60px;height:60px;border-radius:18px;background:var(--accent);display:grid;place-items:center;box-shadow:0 12px 36px -8px rgba(56,189,248,.7)}
+.loader-logo svg{width:30px;height:30px;color:#06121f}
+.loader-spinner{width:36px;height:36px;border:3px solid rgba(56,189,248,.15);border-top-color:#38bdf8;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:13px;color:var(--faint)}
 .app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .appbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;background:linear-gradient(180deg,rgba(7,11,20,.92),rgba(7,11,20,.55));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--stroke)}
 .brand{display:flex;align-items:center;gap:11px}
@@ -37,8 +44,7 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .brand-name{font-family:var(--font-d);font-weight:700;font-size:16px;letter-spacing:-.02em}
 .brand-sub{font-size:11px;color:var(--faint);margin-top:3px;letter-spacing:.02em}
 .icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:.18s;flex:none}
-.icon-btn:hover{background:var(--glass-2);color:var(--txt)}
-.icon-btn:active{transform:scale(.94)}
+.icon-btn:hover{background:var(--glass-2);color:var(--txt)}.icon-btn:active{transform:scale(.94)}
 .icon-btn svg{width:19px;height:19px}
 .screen{display:none;padding:18px 16px 8px;animation:fade .35s ease both}
 .screen.on{display:block}
@@ -119,17 +125,17 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .sheet-close svg{width:17px;height:17px}.sheet-close:active{transform:scale(.92)}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:7px}
-.field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:15px;color:var(--txt);background:var(--glass);border:1px solid var(--stroke);border-radius:13px;padding:13px 14px;outline:none;transition:.18s;-webkit-appearance:none;appearance:none}
+.field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:15px;color:var(--txt);background:rgba(10,16,32,.9);border:1px solid var(--stroke);border-radius:13px;padding:13px 14px;outline:none;transition:.18s;-webkit-appearance:none;appearance:none}
 .field textarea{resize:vertical;min-height:62px;line-height:1.5}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--a2);background:var(--glass-2);box-shadow:0 0 0 3px rgba(129,140,248,.16)}
-.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393a1b3' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--a2);background:rgba(15,22,45,.95);box-shadow:0 0 0 3px rgba(129,140,248,.16)}
+.field input::placeholder,.field textarea::placeholder{color:var(--faint)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393a1b3' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;color-scheme:dark}
 .field .seg{margin-top:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .hidden{display:none!important}
 .sheet-foot{display:flex;gap:10px;margin-top:22px}
 .btn{flex:1;border:0;font-family:inherit;font-weight:700;font-size:15px;padding:15px;border-radius:14px;cursor:pointer;transition:.18s}
-.btn:active{transform:scale(.98)}
-.btn:disabled{opacity:.55;cursor:default}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.55;cursor:default;transform:none}
 .btn-primary{background:var(--accent);color:#06121f;box-shadow:0 12px 28px -12px rgba(56,189,248,.8)}
 .btn-ghost{background:var(--glass);color:var(--txt);border:1px solid var(--stroke)}
 .btn-danger{background:rgba(251,113,133,.12);color:var(--neg);border:1px solid rgba(251,113,133,.25);flex:none;width:54px;display:grid;place-items:center}
@@ -140,11 +146,18 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .set-btn svg{width:18px;height:18px;color:var(--muted)}
 .set-btn.danger{color:var(--neg)}.set-btn.danger svg{color:var(--neg)}
 .set-note{font-size:11.5px;color:var(--faint);margin:14px 2px 0;line-height:1.5}
-.toast{position:fixed;bottom:calc(108px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);z-index:90;background:#0f1727;border:1px solid var(--stroke-2);color:var(--txt);font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:13px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;max-width:90vw;text-align:center}
+.toast{position:fixed;bottom:calc(108px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);z-index:300;background:#0f1727;border:1px solid var(--stroke-2);color:var(--txt);font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:13px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:rgba(251,113,133,.45);color:var(--neg);background:#170f14}
+.spin-inline{display:inline-block;width:13px;height:13px;border:2px solid rgba(6,18,31,.25);border-top-color:#06121f;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>
+<div id="appLoader">
+  <div class="loader-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+  <div class="loader-spinner"></div>
+  <div class="loader-txt">Загрузка данных…</div>
+</div>
 <div class="app">
   <header class="appbar">
     <div class="brand">
@@ -189,20 +202,84 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 </div>
 <div class="sheet-overlay" id="sheet"><div class="sheet" id="sheetInner"></div></div>
 <div class="toast" id="toast"></div>
-<script>
-const SUPABASE_URL      = 'https://eoregtvvmzrruztcrysmz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmVndHZ2bXpycnV6dGNyeW16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTY4MTQsImV4cCI6MjA5NjA3MjgxNH0.Kxk-r8S65zRGzwEsbs6Zs4XDcp0SE4dIlydnZ_DzxfE';
 
+<script>
+// ======================================================
+// Supabase REST API — без SDK, чистый fetch
+// Совместимо с Vercel, локальным открытием и iframe
+// ======================================================
+const SB_URL  = 'https://eoregtvvmzrruztcrysmz.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcmVndHZ2bXpycnV6dGNyeW16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTY4MTQsImV4cCI6MjA5NjA3MjgxNH0.Kxk-r8S65zRGzwEsbs6Zs4XDcp0SE4dIlydnZ_DzxfE';
+
+// Базовые CRUD операции через REST
+async function sbFetch(table, opts={}){
+  const {method='GET', params={}, body, returning=false} = opts;
+  let url = SB_URL+'/rest/v1/'+table;
+  const qp = new URLSearchParams(params);
+  if([...qp].length) url += '?'+qp.toString();
+
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer '+SB_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  if(returning) headers['Prefer'] = 'return=representation';
+
+  const res = await fetch(url, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if(!res.ok){
+    let msg = res.statusText;
+    try{ const e=await res.json(); msg=(e.message||e.error||msg)+' ('+res.status+')'; }catch(e){}
+    throw new Error(msg);
+  }
+  if(res.status===204) return null;
+  return res.json();
+}
+
+// Хелперы
+const sbGet    = (t, params={}) => sbFetch(t, {params});
+const sbInsert = (t, body, ret=false) => sbFetch(t, {method:'POST', body, returning:ret});
+const sbUpdate = (t, id, body) => sbFetch(t, {method:'PATCH', params:{id:'eq.'+id}, body});
+const sbDelete = (t, id) => sbFetch(t, {method:'DELETE', params:{id:'eq.'+id}});
+const sbUpsert = (t, body) => sbFetch(t, {method:'POST', params:{on_conflict:'id'}, body, returning:true, ...{extraHeaders:{'Prefer':'resolution=merge-duplicates,return=representation'}}});
+
+// Специальный upsert (merge-duplicates)
+async function sbUpsertSettings(body){
+  const url = SB_URL+'/rest/v1/settings?on_conflict=id';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer '+SB_KEY,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=representation',
+    },
+    body: JSON.stringify(body),
+  });
+  if(!res.ok){
+    let msg = res.statusText;
+    try{ const e=await res.json(); msg=(e.message||e.error||msg)+' ('+res.status+')'; }catch(e){}
+    throw new Error(msg);
+  }
+  return res.status===204 ? null : res.json();
+}
+
+// ======================================================
 const $=id=>document.getElementById(id);
 const val=id=>{const e=$(id);return e?e.value:'';};
-let sb=null;
 let state={channels:[],sales:[],expenses:[],settings:{brand:'Моя сеть',currency:'₽'}};
 let period='month';
 const FORMATS={post24:'Пост 1/24',perm:'Без удаления',pin:'Закреп',native:'Нативная',other:'Другое'};
 const CATS=['Контент','Дизайн','Закупка трафика','Сервисы и подписки','Налоги и комиссии','Прочее'];
 
 const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
-function money(n){const v=Math.round(Number(n)||0);return (v<0?'−':'')+nf.format(Math.abs(v))+' '+state.settings.currency;}
+function money(n){const v=Math.round(Number(n)||0);return(v<0?'−':'')+nf.format(Math.abs(v))+'\u202f'+state.settings.currency;}
 function parseAmt(s){return Math.abs(parseFloat(String(s).replace(/\s/g,'').replace(',','.')))||0;}
 function today(){return new Date().toISOString().slice(0,10);}
 function fmtDate(d){if(!d)return '';const p=String(d).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0].slice(2);}
@@ -216,7 +293,15 @@ function inPeriod(ds){
   return true;
 }
 let toastT;
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+function toast(msg,isErr=false){
+  const t=$('toast');t.textContent=msg;
+  t.classList.toggle('err',isErr);t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),isErr?5000:2800);
+}
+function hideLoader(){
+  const l=$('appLoader');if(!l)return;
+  l.classList.add('fade');setTimeout(()=>l.style.display='none',420);
+}
 
 const IC={
   in:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>',
@@ -232,45 +317,59 @@ const IC={
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
 };
 
+// ====== DATA LOADING ======
 async function loadAll(){
   try{
-    const [ch,sl,ex,st]=await Promise.all([
-      sb.from('channels').select('*').order('created_at',{ascending:true}),
-      sb.from('sales').select('*').order('date',{ascending:false}),
-      sb.from('expenses').select('*').order('date',{ascending:false}),
-      sb.from('settings').select('*').maybeSingle(),
+    const [ch,sl,ex] = await Promise.all([
+      sbGet('channels','order=created_at.asc'),
+      sbGet('sales','order=date.desc'),
+      sbGet('expenses','order=date.desc'),
     ]);
-    if(ch.error) toast('Ошибка channels: '+ch.error.message);
-    if(sl.error) toast('Ошибка sales: '+sl.error.message);
-    if(ex.error) toast('Ошибка expenses: '+ex.error.message);
-    state.channels=ch.data||[];
-    state.sales=sl.data||[];
-    state.expenses=ex.data||[];
-    if(st&&st.data){state.settings={brand:st.data.brand||'Моя сеть',currency:st.data.currency||'₽'};}
+    // Note: sbGet with second arg as string — fix:
+    const [channels, sales, expenses] = await Promise.all([
+      sbFetch('channels',{params:{order:'created_at.asc'}}),
+      sbFetch('sales',{params:{order:'date.desc'}}),
+      sbFetch('expenses',{params:{order:'date.desc'}}),
+    ]);
+    state.channels = channels||[];
+    state.sales    = sales||[];
+    state.expenses = expenses||[];
+
+    // Settings (maybeSingle via limit)
+    try{
+      const stArr = await sbFetch('settings',{params:{limit:'1'}});
+      if(stArr&&stArr.length) state.settings={brand:stArr[0].brand||'Моя сеть',currency:stArr[0].currency||'₽'};
+    }catch(e){/* settings table might be empty */}
+
     renderAll();
-  }catch(e){toast('Ошибка загрузки: '+(e.message||e));}
-}
-async function reload(which){
-  try{
-    if(which==='channels'){const r=await sb.from('channels').select('*').order('created_at',{ascending:true});if(!r.error)state.channels=r.data||[];else toast('Ошибка: '+r.error.message);}
-    if(which==='sales'){const r=await sb.from('sales').select('*').order('date',{ascending:false});if(!r.error)state.sales=r.data||[];else toast('Ошибка: '+r.error.message);}
-    if(which==='expenses'){const r=await sb.from('expenses').select('*').order('date',{ascending:false});if(!r.error)state.expenses=r.data||[];else toast('Ошибка: '+r.error.message);}
-  }catch(e){toast('Ошибка reload: '+(e.message||e));}
+    hideLoader();
+  }catch(e){
+    hideLoader();
+    toast('Ошибка загрузки: '+e.message, true);
+  }
 }
 
+async function reload(which){
+  try{
+    if(which==='channels') state.channels = await sbFetch('channels',{params:{order:'created_at.asc'}})||[];
+    if(which==='sales')    state.sales    = await sbFetch('sales',{params:{order:'date.desc'}})||[];
+    if(which==='expenses') state.expenses = await sbFetch('expenses',{params:{order:'date.desc'}})||[];
+  }catch(e){toast('Ошибка обновления: '+e.message, true);}
+}
+
+// ====== UI ======
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===name));
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.screen===name));
   window.scrollTo({top:0});
 }
-
 function renderAll(){$('brandName').textContent=state.settings.brand||'Моя сеть';renderDash();renderSales();renderExp();renderCh();}
 function emptyState(ic,text,btnId,btnLabel){
   return '<div class="empty"><div class="e-ic">'+ic+'</div><p>'+text+'</p>'+(btnId?'<div class="e-cta"><button class="btn-add" id="'+btnId+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+btnLabel+'</button></div>':'')+'</div>';
 }
 function kpi(cls,label,value,sub){
   const ic=cls.indexOf('rev')===0?IC.rev:cls.indexOf('exp')===0?IC.exp:cls.indexOf('profit')===0?IC.profit:IC.count;
-  return '<div class="kpi '+cls+'"><div class="kpi-top"><span class="kpi-ic">'+ic+'</span><span class="kpi-label">'+label+'</span></div><div class="kpi-val">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>';
+  return '<div class="kpi '+cls+'"><div class="kpi-top"><span class="kpi-ic">'+ic+'</span><span>'+label+'</span></div><div class="kpi-val">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>';
 }
 function opRow(o){
   const isSale=o.t==='sale';
@@ -284,7 +383,7 @@ function renderDash(){
   const profit=rev-exp,cnt=sP.length,avg=cnt?Math.round(rev/cnt):0;
   $('kpis').innerHTML=kpi('rev','Доход',money(rev),sP.length?cnt+' прод.':'нет продаж')+kpi('exp','Расход',money(exp),eP.length?eP.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период')+kpi('count','Продано реклам',String(cnt),cnt?'средний чек '+money(avg):'—');
   const map={};
-  sP.forEach(s=>{const k=s.channel_id||'_';map[k]=map[k]||{name:chName(s.channel_id),amt:0,cnt:0};map[k].amt+=(+s.amount||0);map[k].cnt++;});
+  sP.forEach(s=>{const k=s.channel_id||'_';map[k]=map[k]||{name:chName(s.channel_id),amt:0};map[k].amt+=(+s.amount||0);});
   const arr=Object.values(map).sort((a,b)=>b.amt-a.amt).slice(0,6);
   const max=Math.max(1,...arr.map(x=>x.amt));
   $('byChHint').textContent=arr.length?arr.length+' кан.':'';
@@ -300,8 +399,7 @@ function renderDash(){
   state.sales.forEach(s=>ops.push({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending'}));
   state.expenses.forEach(e=>ops.push({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0}));
   ops.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  const rec=ops.slice(0,6);
-  $('recent').innerHTML=rec.length?'<div class="list" style="margin-top:0">'+rec.map(o=>opRow(o)).join('')+'</div>':'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Здесь появятся ваши операции</p>';
+  $('recent').innerHTML=ops.length?'<div class="list" style="margin-top:0">'+ops.slice(0,6).map(o=>opRow(o)).join('')+'</div>':'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Здесь появятся ваши операции</p>';
 }
 function renderSales(){
   const list=[...state.sales].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -323,6 +421,7 @@ function renderCh(){
   }).join('');
 }
 
+// ====== SHEET ======
 function openSheet(html){$('sheetInner').innerHTML=html;$('sheet').classList.add('open');document.body.style.overflow='hidden';}
 function closeSheet(){$('sheet').classList.remove('open');document.body.style.overflow='';}
 function sheetHead(title){return '<div class="grip"></div><div class="sheet-h"><h3>'+title+'</h3><button class="sheet-close" id="sheetClose">'+IC.close+'</button></div>';}
@@ -335,7 +434,46 @@ function bindSeg(scope){
     }));
   });
 }
+function setBtnLoading(btn,text){btn.disabled=true;btn.innerHTML='<span class="spin-inline"></span>'+text;}
+function setBtnReset(btn,text){btn.disabled=false;btn.textContent=text;}
 
+// ====== CHANNEL FORM ======
+function openChannelForm(id){
+  const ed=id?state.channels.find(x=>x.id===id):null;
+  openSheet(sheetHead(ed?'Канал':'Новый канал')+
+    '<div class="field"><label>Название</label><input id="cf_name" type="text" placeholder="напр. IT Jobs" value="'+esc(ed?ed.name:'')+'"></div>'+
+    '<div class="field"><label>Юзернейм (необязательно)</label><input id="cf_handle" type="text" placeholder="@channel" value="'+esc(ed?(ed.handle?'@'+ed.handle:''):'')+'"></div>'+
+    '<div class="field"><label>Подписчиков (необязательно)</label><input id="cf_subs" type="text" inputmode="numeric" placeholder="" value="'+(ed&&ed.subs!=null?ed.subs:'')+'"></div>'+
+    '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="cf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="cf_save">Сохранить</button></div>');
+  bindClose();
+  $('cf_save').addEventListener('click',()=>saveChannel(id));
+  if(ed) $('cf_del').addEventListener('click',()=>delRow('channels',id,'Удалить канал? Продажи останутся без названия.'));
+}
+async function saveChannel(id){
+  const btn=$('cf_save');
+  const name=val('cf_name').trim();
+  if(!name){toast('Введи название канала');return;}
+  const handle=val('cf_handle').trim().replace(/^@+/,'')||null;
+  const subsRaw=val('cf_subs').trim().replace(/\s/g,'');
+  const subsN=subsRaw?parseInt(subsRaw,10):null;
+  const rec={name, handle, subs:(subsN&&!isNaN(subsN))?subsN:null};
+  setBtnLoading(btn,'Сохраняю…');
+  try{
+    if(id){
+      await sbUpdate('channels',id,rec);
+    } else {
+      await sbInsert('channels',rec);
+    }
+    await reload('channels');
+    renderAll();closeSheet();
+    toast(id?'Канал обновлён':'Канал добавлен');
+  }catch(e){
+    setBtnReset(btn,'Сохранить');
+    toast('Ошибка: '+e.message, true);
+  }
+}
+
+// ====== SALE FORM ======
 function openSaleForm(id){
   const ed=id?state.sales.find(x=>x.id===id):null;
   const hasCh=state.channels.length>0;
@@ -343,40 +481,55 @@ function openSaleForm(id){
   const fmtOpts=Object.keys(FORMATS).map(k=>'<option value="'+k+'"'+((ed&&ed.format===k)||(!ed&&k==='post24')?' selected':'')+'>'+FORMATS[k]+'</option>').join('');
   const st=ed?(ed.status||'paid'):'paid';
   openSheet(sheetHead(ed?'Продажа':'Новая продажа')+
-    '<div class="field"><label>Канал</label>'+(hasCh?'<select id="sf_channel"><option value="">— выбери канал —</option>'+chOpts+'<option value="__new__">+ Новый канал…</option></select>':'')+
+    '<div class="field"><label>Канал</label>'+
+    (hasCh?'<select id="sf_channel"><option value="">— выбери канал —</option>'+chOpts+'<option value="__new__">+ Новый канал…</option></select>':'')+
     '<input id="sf_newch" type="text" placeholder="Название канала" class="'+(hasCh?'hidden':'')+'" style="margin-top:'+(hasCh?'10px':'0')+'"></div>'+
-    '<div class="field"><label>Клиент / рекламодатель</label><input id="sf_client" type="text" placeholder="напр. SkillBox" value="'+esc(ed?ed.client:'')+'"></div>'+
+    '<div class="field"><label>Клиент / рекламодатель</label><input id="sf_client" type="text" placeholder="напр. SkillBox" value="'+esc(ed?ed.client||'':'')+'"></div>'+
     '<div class="field"><label>Формат</label><select id="sf_format">'+fmtOpts+'</select></div>'+
     '<div class="two"><div class="field"><label>Сумма</label><input id="sf_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
     '<div class="field"><label>Дата</label><input id="sf_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"></div></div>'+
     '<div class="field"><label>Статус оплаты</label><div class="seg" id="sf_status" data-value="'+st+'"><button class="seg-btn'+(st==='paid'?' on':'')+'" data-value="paid">Оплачено</button><button class="seg-btn'+(st==='pending'?' on':'')+'" data-value="pending">Ожидает</button></div></div>'+
-    '<div class="field"><label>Заметка</label><textarea id="sf_note" placeholder="комментарий (необязательно)">'+esc(ed?ed.note:'')+'</textarea></div>'+
+    '<div class="field"><label>Заметка</label><textarea id="sf_note" placeholder="комментарий (необязательно)">'+esc(ed?ed.note||'':'')+'</textarea></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="sf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="sf_save">Сохранить</button></div>');
   bindClose();bindSeg($('sheetInner'));
   const sel=$('sf_channel');
-  if(sel)sel.addEventListener('change',()=>{$('sf_newch').classList.toggle('hidden',sel.value!=='__new__');if(sel.value==='__new__')$('sf_newch').focus();});
+  if(sel) sel.addEventListener('change',()=>{
+    const isNew=sel.value==='__new__';
+    $('sf_newch').classList.toggle('hidden',!isNew);
+    if(isNew) $('sf_newch').focus();
+  });
   $('sf_save').addEventListener('click',()=>saveSale(id));
-  if(ed)$('sf_del').addEventListener('click',()=>delRow('sales',id,'Удалить эту продажу?'));
+  if(ed) $('sf_del').addEventListener('click',()=>delRow('sales',id,'Удалить эту продажу?'));
 }
 async function saveSale(id){
-  const btn=$('sf_save');const sel=$('sf_channel');let channelId=sel?sel.value:'';
-  if(!state.channels.length||channelId==='__new__'){
-    const name=val('sf_newch').trim();if(!name){toast('Укажи название канала');return;}
-    btn.disabled=true;
-    const cr=await sb.from('channels').insert({name:name}).select().single();
-    if(cr.error){btn.disabled=false;toast('Ошибка канала: '+cr.error.message);return;}
-    await reload('channels');channelId=cr.data.id;
+  const btn=$('sf_save');
+  const sel=$('sf_channel');
+  let channelId=sel?sel.value:'';
+  const needNewCh=!state.channels.length||(sel&&sel.value==='__new__');
+  if(needNewCh){
+    const name=val('sf_newch').trim();
+    if(!name){toast('Укажи название канала');return;}
+    setBtnLoading(btn,'Создаю канал…');
+    try{
+      const newCh=await sbInsert('channels',{name},true);
+      await reload('channels');
+      // find newly created channel by name
+      const found=state.channels.find(c=>c.name===name);
+      channelId=found?found.id:(newCh&&newCh[0]?newCh[0].id:'');
+    }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка канала: '+e.message,true);return;}
   }
-  if(!channelId){toast('Выбери канал');return;}
-  const amount=parseAmt(val('sf_amount'));if(!(amount>0)){toast('Введи сумму');return;}
-  const rec={channel_id:channelId,amount:amount,date:val('sf_date')||today(),client:val('sf_client').trim(),format:val('sf_format'),status:$('sf_status').dataset.value||'paid',note:val('sf_note').trim()};
-  btn.disabled=true;
+  if(!channelId){toast('Выбери канал');setBtnReset(btn,'Сохранить');return;}
+  const amount=parseAmt(val('sf_amount'));
+  if(!(amount>0)){toast('Введи сумму');setBtnReset(btn,'Сохранить');return;}
+  const rec={channel_id:channelId,amount,date:val('sf_date')||today(),client:val('sf_client').trim(),format:val('sf_format'),status:($('sf_status')||{dataset:{value:'paid'}}).dataset.value||'paid',note:val('sf_note').trim()};
+  setBtnLoading(btn,'Сохраняю…');
   try{
-    const res=id?await sb.from('sales').update(rec).eq('id',id):await sb.from('sales').insert(rec);
-    if(res.error){btn.disabled=false;toast('Ошибка: '+res.error.message);return;}
+    id?await sbUpdate('sales',id,rec):await sbInsert('sales',rec);
     await reload('sales');renderAll();closeSheet();toast('Сохранено');
-  }catch(e){btn.disabled=false;toast('Ошибка: '+(e.message||e));}
+  }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка: '+e.message,true);}
 }
+
+// ====== EXPENSE FORM ======
 function openExpenseForm(id){
   const ed=id?state.expenses.find(x=>x.id===id):null;
   const catOpts=CATS.map(c=>'<option value="'+c+'"'+((ed&&ed.category===c)?' selected':'')+'>'+c+'</option>').join('');
@@ -384,56 +537,34 @@ function openExpenseForm(id){
     '<div class="field"><label>Категория</label><select id="ef_cat">'+catOpts+'</select></div>'+
     '<div class="two"><div class="field"><label>Сумма</label><input id="ef_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
     '<div class="field"><label>Дата</label><input id="ef_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"></div></div>'+
-    '<div class="field"><label>Заметка</label><textarea id="ef_note" placeholder="на что потрачено">'+esc(ed?ed.note:'')+'</textarea></div>'+
+    '<div class="field"><label>Заметка</label><textarea id="ef_note" placeholder="на что потрачено">'+esc(ed?ed.note||'':'')+'</textarea></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="ef_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="ef_save">Сохранить</button></div>');
   bindClose();
   $('ef_save').addEventListener('click',()=>saveExpense(id));
-  if(ed)$('ef_del').addEventListener('click',()=>delRow('expenses',id,'Удалить этот расход?'));
+  if(ed) $('ef_del').addEventListener('click',()=>delRow('expenses',id,'Удалить этот расход?'));
 }
 async function saveExpense(id){
-  const btn=$('ef_save');const amount=parseAmt(val('ef_amount'));if(!(amount>0)){toast('Введи сумму');return;}
-  const rec={category:val('ef_cat'),amount:amount,date:val('ef_date')||today(),note:val('ef_note').trim()};
-  btn.disabled=true;
+  const btn=$('ef_save');
+  const amount=parseAmt(val('ef_amount'));
+  if(!(amount>0)){toast('Введи сумму');return;}
+  const rec={category:val('ef_cat'),amount,date:val('ef_date')||today(),note:val('ef_note').trim()};
+  setBtnLoading(btn,'Сохраняю…');
   try{
-    const res=id?await sb.from('expenses').update(rec).eq('id',id):await sb.from('expenses').insert(rec);
-    if(res.error){btn.disabled=false;toast('Ошибка: '+res.error.message);return;}
+    id?await sbUpdate('expenses',id,rec):await sbInsert('expenses',rec);
     await reload('expenses');renderAll();closeSheet();toast('Сохранено');
-  }catch(e){btn.disabled=false;toast('Ошибка: '+(e.message||e));}
+  }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка: '+e.message,true);}
 }
-function openChannelForm(id){
-  const ed=id?state.channels.find(x=>x.id===id):null;
-  openSheet(sheetHead(ed?'Канал':'Новый канал')+
-    '<div class="field"><label>Название</label><input id="cf_name" type="text" placeholder="напр. IT Jobs" value="'+esc(ed?ed.name:'')+'"></div>'+
-    '<div class="field"><label>Юзернейм</label><input id="cf_handle" type="text" placeholder="@channel" value="'+esc(ed?(ed.handle?'@'+ed.handle:''):'')+'"></div>'+
-    '<div class="field"><label>Подписчиков</label><input id="cf_subs" type="text" inputmode="numeric" placeholder="необязательно" value="'+(ed&&ed.subs?ed.subs:'')+'"></div>'+
-    '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="cf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="cf_save">Сохранить</button></div>');
-  bindClose();
-  $('cf_save').addEventListener('click',()=>saveChannel(id));
-  if(ed)$('cf_del').addEventListener('click',()=>delRow('channels',id,'Удалить канал? Продажи по нему останутся, но без названия.'));
-}
-async function saveChannel(id){
-  const btn=$('cf_save');
-  const name=val('cf_name').trim();if(!name){toast('Введи название');return;}
-  const handle=val('cf_handle').trim().replace(/^@+/,'')||null;
-  const subsRaw=String(val('cf_subs')).replace(/\s/g,'');
-  const subsN=subsRaw?parseInt(subsRaw,10):null;
-  const rec={name:name,handle:handle,subs:(subsN&&!isNaN(subsN))?subsN:null};
-  btn.disabled=true;
-  try{
-    const res=id?await sb.from('channels').update(rec).eq('id',id):await sb.from('channels').insert(rec);
-    if(res.error){btn.disabled=false;toast('Ошибка: '+res.error.message+' ['+res.error.code+']');return;}
-    await reload('channels');renderAll();closeSheet();toast('Сохранено');
-  }catch(e){btn.disabled=false;toast('Ошибка: '+(e.message||JSON.stringify(e)));}
-}
+
+// ====== DELETE ======
 async function delRow(table,id,msg){
   if(!confirm(msg))return;
   try{
-    const res=await sb.from(table).delete().eq('id',id);
-    if(res.error){toast('Ошибка: '+res.error.message);return;}
+    await sbDelete(table,id);
     await reload(table);renderAll();closeSheet();toast('Удалено');
-  }catch(e){toast('Ошибка: '+(e.message||e));}
+  }catch(e){toast('Ошибка: '+e.message,true);}
 }
 
+// ====== SETTINGS ======
 function openSettings(){
   openSheet(sheetHead('Настройки')+
     '<div class="field"><label>Название сети</label><input id="set_brand" type="text" value="'+esc(state.settings.brand)+'"></div>'+
@@ -444,7 +575,7 @@ function openSettings(){
       '<button class="set-btn" id="set_import">'+IC.upload+' Импорт из файла</button>'+
       '<button class="set-btn danger" id="set_clear">'+IC.trash+' Очистить все данные</button>'+
     '</div>'+
-    '<input type="file" id="set_file" accept="application/json,.json" class="hidden">'+
+    '<input type="file" id="set_file" accept="application/json,.json" style="display:none">'+
     '<p class="set-note">Данные в облачной базе Supabase — общие для всех устройств.</p>');
   bindClose();
   $('set_save').addEventListener('click',saveSettings);
@@ -456,10 +587,9 @@ function openSettings(){
 async function saveSettings(){
   const brand=val('set_brand').trim()||'Моя сеть',currency=val('set_cur').trim()||'₽';
   try{
-    const res=await sb.from('settings').upsert({id:1,brand:brand,currency:currency,updated_at:new Date().toISOString()},{onConflict:'id'});
-    if(res.error){toast('Ошибка: '+res.error.message);return;}
-    state.settings={brand:brand,currency:currency};renderAll();closeSheet();toast('Сохранено');
-  }catch(e){toast('Ошибка: '+(e.message||e));}
+    await sbUpsertSettings({id:1,brand,currency,updated_at:new Date().toISOString()});
+    state.settings={brand,currency};renderAll();closeSheet();toast('Сохранено');
+  }catch(e){toast('Ошибка: '+e.message,true);}
 }
 function exportData(){
   const data={app:'tg-otchetnost',v:2,exportedAt:new Date().toISOString(),settings:state.settings,channels:state.channels,sales:state.sales,expenses:state.expenses};
@@ -468,38 +598,40 @@ function exportData(){
   setTimeout(()=>URL.revokeObjectURL(url),1500);toast('Файл выгружен');
 }
 async function importData(file){
-  let d;try{d=JSON.parse(await file.text());}catch(e){toast('Файл не распознан');return;}
+  let d;try{d=JSON.parse(await file.text());}catch(e){toast('Файл не распознан',true);return;}
   toast('Импортирую…');
   try{
     const idMap={};
     if(Array.isArray(d.channels)&&d.channels.length){
-      const rows=d.channels.map(c=>({name:c.name||'Канал',handle:c.handle||null,subs:(c.subs!=null?c.subs:null)}));
-      const ins=await sb.from('channels').insert(rows).select();if(ins.error)throw ins.error;
-      d.channels.forEach((c,i)=>{if(ins.data&&ins.data[i])idMap[c.id]=ins.data[i].id;});
+      const rows=d.channels.map(c=>({name:c.name||'Канал',handle:c.handle||null,subs:c.subs!=null?c.subs:null}));
+      const ins=await sbInsert('channels',rows,true);
+      if(ins) d.channels.forEach((c,i)=>{if(ins[i])idMap[c.id]=ins[i].id;});
     }
     if(Array.isArray(d.sales)&&d.sales.length){
-      const rows=d.sales.map(s=>({channel_id:idMap[s.channelId]||idMap[s.channel_id]||null,amount:s.amount||0,date:String(s.date||today()).slice(0,10),client:s.client||'',format:s.format||'other',status:s.status||'paid',note:s.note||''}));
-      const ins=await sb.from('sales').insert(rows);if(ins.error)throw ins.error;
+      await sbInsert('sales',d.sales.map(s=>({channel_id:idMap[s.channelId]||idMap[s.channel_id]||null,amount:s.amount||0,date:String(s.date||today()).slice(0,10),client:s.client||'',format:s.format||'other',status:s.status||'paid',note:s.note||''})));
     }
     if(Array.isArray(d.expenses)&&d.expenses.length){
-      const rows=d.expenses.map(e=>({amount:e.amount||0,date:String(e.date||today()).slice(0,10),category:e.category||'Прочее',note:e.note||''}));
-      const ins=await sb.from('expenses').insert(rows);if(ins.error)throw ins.error;
+      await sbInsert('expenses',d.expenses.map(e=>({amount:e.amount||0,date:String(e.date||today()).slice(0,10),category:e.category||'Прочее',note:e.note||''})));
     }
-    if(d.settings){await sb.from('settings').upsert({id:1,brand:d.settings.brand||'Моя сеть',currency:d.settings.currency||'₽'},{onConflict:'id'});}
+    if(d.settings) await sbUpsertSettings({id:1,brand:d.settings.brand||'Моя сеть',currency:d.settings.currency||'₽'});
     await loadAll();closeSheet();toast('Импортировано');
-  }catch(e){toast('Ошибка импорта: '+(e.message||e));}
+  }catch(e){toast('Ошибка импорта: '+e.message,true);}
 }
 async function clearAll(){
   if(!confirm('Удалить ВСЕ данные без возможности восстановления?'))return;
   try{
-    const DUMMY='00000000-0000-0000-0000-000000000000';
-    await sb.from('sales').delete().neq('id',DUMMY);
-    await sb.from('expenses').delete().neq('id',DUMMY);
-    await sb.from('channels').delete().neq('id',DUMMY);
+    // Delete all rows using neq on a UUID that never exists
+    const never='00000000-0000-0000-0000-000000000000';
+    await Promise.all([
+      sbFetch('sales',    {method:'DELETE', params:{id:'neq.'+never}}),
+      sbFetch('expenses', {method:'DELETE', params:{id:'neq.'+never}}),
+      sbFetch('channels', {method:'DELETE', params:{id:'neq.'+never}}),
+    ]);
     await loadAll();closeSheet();toast('Очищено');
-  }catch(e){toast('Ошибка: '+(e.message||e));}
+  }catch(e){toast('Ошибка: '+e.message,true);}
 }
 
+// ====== EVENTS ======
 document.addEventListener('click',e=>{
   const row=e.target.closest('.row[data-id]');if(!row)return;
   const t=row.dataset.type,id=row.dataset.id;
@@ -521,8 +653,7 @@ $('addCh').addEventListener('click',()=>openChannelForm());
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();});
 
-// Старт
-sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+// ====== INIT ======
 loadAll();
 </script>
 </body>
