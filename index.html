@@ -225,6 +225,7 @@ async function sbFetch(table, opts={}){
     'Accept': 'application/json',
   };
   if(returning) headers['Prefer'] = 'return=representation';
+  else if(method==='POST'||method==='PATCH') headers['Prefer'] = 'return=minimal';
 
   const res = await fetch(url, {
     method,
@@ -237,8 +238,15 @@ async function sbFetch(table, opts={}){
     try{ const e=await res.json(); msg=(e.message||e.error||msg)+' ('+res.status+')'; }catch(e){}
     throw new Error(msg);
   }
-  if(res.status===204) return null;
-  return res.json();
+  if(res.status===204||res.status===201) {
+    // try to parse if there's content, otherwise return null
+    const text = await res.text();
+    if(!text||text.trim()==='') return null;
+    try{ return JSON.parse(text); }catch(e){ return null; }
+  }
+  const text = await res.text();
+  if(!text||text.trim()==='') return null;
+  try{ return JSON.parse(text); }catch(e){ return null; }
 }
 
 // Хелперы
