@@ -285,6 +285,10 @@ let state={channels:[],sales:[],expenses:[],settings:{brand:'Моя сеть',cu
 let period='month';
 const FORMATS={post24:'Пост 1/24',perm:'Без удаления',pin:'Закреп',native:'Нативная',other:'Другое'};
 const CATS=['Контент','Дизайн','Закупка трафика','Сервисы и подписки','Налоги и комиссии','Прочее'];
+const MANAGERS={none:{label:'Я сам',pct:0},maxim:{label:'Максим',pct:50},leha:{label:'Лёха',pct:40}};
+function mgr(key){return MANAGERS[key]||MANAGERS.none;}
+function commission(amt,mgrKey){return Math.round((+amt||0)*mgr(mgrKey).pct/100);}
+function myNet(amt,mgrKey){return Math.round(+amt||0)-commission(amt,mgrKey);}
 
 const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
 function money(n){const v=Math.round(Number(n)||0);return(v<0?'−':'')+nf.format(Math.abs(v))+'\u202f'+state.settings.currency;}
@@ -381,15 +385,22 @@ function kpi(cls,label,value,sub){
 }
 function opRow(o){
   const isSale=o.t==='sale';
-  return '<button class="row" data-type="'+o.t+'" data-id="'+o.id+'"><span class="row-ic '+(isSale?'in':'out')+'">'+(isSale?IC.in:IC.out)+'</span><span class="row-main"><span class="row-title">'+esc(o.title)+'</span><span class="row-sub">'+esc(o.sub)+(fmtDate(o.date)?(o.sub?' · ':'')+fmtDate(o.date):'')+(o.pending?' <span class="tag">ожидает</span>':'')+'</span></span><span class="row-amt '+(isSale?'pos':'neg')+'">'+(isSale?'+':'−')+money(o.amt)+'</span></button>';
+  const mgrKey=o.manager||'none';
+  const hasMgr=isSale&&mgrKey!=='none';
+  const net=hasMgr?myNet(o.amt,mgrKey):o.amt;
+  const comm=hasMgr?commission(o.amt,mgrKey):0;
+  const mgrLabel=hasMgr?mgr(mgrKey).label+'  −'+money(comm):'';
+  return '<button class="row" data-type="'+o.t+'" data-id="'+o.id+'"><span class="row-ic '+(isSale?'in':'out')+'">'+(isSale?IC.in:IC.out)+'</span><span class="row-main"><span class="row-title">'+esc(o.title)+'</span><span class="row-sub">'+esc(o.sub)+(fmtDate(o.date)?(o.sub?' · ':'')+fmtDate(o.date):'')+(hasMgr?' · <span style="color:var(--warn)">'+esc(mgrLabel)+'</span>':'')+(o.pending?' <span class="tag">ожидает</span>':'')+'</span></span><span class="row-amt '+(isSale?'pos':'neg')+'"><span>'+(isSale?'+':'−')+money(hasMgr?net:o.amt)+'</span>'+(hasMgr?'<span class="amt-sub">из '+money(o.amt)+'</span>':'')+'</span></button>';
 }
 function renderDash(){
   const sP=state.sales.filter(s=>inPeriod(s.date));
   const eP=state.expenses.filter(e=>inPeriod(e.date));
   const rev=sP.reduce((a,b)=>a+(+b.amount||0),0);
   const exp=eP.reduce((a,b)=>a+(+b.amount||0),0);
-  const profit=rev-exp,cnt=sP.length,avg=cnt?Math.round(rev/cnt):0;
-  $('kpis').innerHTML=kpi('rev','Доход',money(rev),sP.length?cnt+' прод.':'нет продаж')+kpi('exp','Расход',money(exp),eP.length?eP.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период')+kpi('count','Продано реклам',String(cnt),cnt?'средний чек '+money(avg):'—');
+  const totalComm=sP.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
+  const netRev=rev-totalComm;
+  const profit=netRev-exp,cnt=sP.length,avg=cnt?Math.round(rev/cnt):0;
+  $('kpis').innerHTML=kpi('rev','Доход (всего)',money(rev),sP.length?cnt+' прод.':'нет продаж')+kpi('rev','Мой доход',money(netRev),totalComm>0?'комиссии: −'+money(totalComm):'без комиссий')+kpi('exp','Расход',money(exp),eP.length?eP.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период');
   const map={};
   sP.forEach(s=>{const k=s.channel_id||'_';map[k]=map[k]||{name:chName(s.channel_id),amt:0};map[k].amt+=(+s.amount||0);});
   const arr=Object.values(map).sort((a,b)=>b.amt-a.amt).slice(0,6);
@@ -404,7 +415,7 @@ function renderDash(){
   const mMax=Math.max(1,...months.map(m=>Math.max(m.rev,m.exp)));
   $('monthly').innerHTML='<div class="chart"><div class="chart-bars">'+months.map(m=>'<div class="month"><div class="cols"><div class="col rev" style="height:'+(m.rev?Math.max(3,m.rev/mMax*100):0)+'%"></div><div class="col exp" style="height:'+(m.exp?Math.max(3,m.exp/mMax*100):0)+'%"></div></div><div class="m-label">'+m.label+'</div></div>').join('')+'</div><div class="legend"><span class="lg rev">Доход</span><span class="lg exp">Расход</span></div></div>';
   const ops=[];
-  state.sales.forEach(s=>ops.push({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending'}));
+  state.sales.forEach(s=>ops.push({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none'}));
   state.expenses.forEach(e=>ops.push({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0}));
   ops.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('recent').innerHTML=ops.length?'<div class="list" style="margin-top:0">'+ops.slice(0,6).map(o=>opRow(o)).join('')+'</div>':'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Здесь появятся ваши операции</p>';
@@ -412,7 +423,7 @@ function renderDash(){
 function renderSales(){
   const list=[...state.sales].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   if(!list.length){$('listSales').innerHTML=emptyState(IC.rev,'Добавь первую продажу рекламы — посчитаем доход.','emptySale','Добавить продажу');return;}
-  $('listSales').innerHTML=list.map(s=>opRow({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending'})).join('');
+  $('listSales').innerHTML=list.map(s=>opRow({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none'})).join('');
 }
 function renderExp(){
   const list=[...state.expenses].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -497,6 +508,7 @@ function openSaleForm(id){
     '<div class="two"><div class="field"><label>Сумма</label><input id="sf_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
     '<div class="field"><label>Дата</label><input id="sf_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"></div></div>'+
     '<div class="field"><label>Статус оплаты</label><div class="seg" id="sf_status" data-value="'+st+'"><button class="seg-btn'+(st==='paid'?' on':'')+'" data-value="paid">Оплачено</button><button class="seg-btn'+(st==='pending'?' on':'')+'" data-value="pending">Ожидает</button></div></div>'+
+    '<div class="field"><label>Менеджер продажи</label><select id="sf_mgr"><option value="none"'+((!ed||!ed.manager)?' selected':'')+'>Я сам (без комиссии)</option><option value="maxim"'+(ed&&ed.manager==='maxim'?' selected':'')+'>Максим — 50%</option><option value="leha"'+(ed&&ed.manager==='leha'?' selected':'')+'>Лёха — 40%</option></select></div>'+
     '<div class="field"><label>Заметка</label><textarea id="sf_note" placeholder="комментарий (необязательно)">'+esc(ed?ed.note||'':'')+'</textarea></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="sf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="sf_save">Сохранить</button></div>');
   bindClose();bindSeg($('sheetInner'));
@@ -529,7 +541,7 @@ async function saveSale(id){
   if(!channelId){toast('Выбери канал');setBtnReset(btn,'Сохранить');return;}
   const amount=parseAmt(val('sf_amount'));
   if(!(amount>0)){toast('Введи сумму');setBtnReset(btn,'Сохранить');return;}
-  const rec={channel_id:channelId,amount,date:val('sf_date')||today(),client:val('sf_client').trim(),format:val('sf_format'),status:($('sf_status')||{dataset:{value:'paid'}}).dataset.value||'paid',note:val('sf_note').trim()};
+  const rec={channel_id:channelId,amount,date:val('sf_date')||today(),client:val('sf_client').trim(),format:val('sf_format'),status:($('sf_status')||{dataset:{value:'paid'}}).dataset.value||'paid',note:val('sf_note').trim(),manager:val('sf_mgr')||'none'};
   setBtnLoading(btn,'Сохраняю…');
   try{
     id?await sbUpdate('sales',id,rec):await sbInsert('sales',rec);
