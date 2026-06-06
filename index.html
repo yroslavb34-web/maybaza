@@ -21,6 +21,11 @@
   --shadow:0 18px 50px -20px rgba(0,0,0,.7);
   --font-d:'Unbounded',-apple-system,system-ui,sans-serif;
   --font-u:'Onest',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  /* Цвета сеток */
+  --grid-0:#38bdf8; /* Москва — голубой */
+  --grid-1:#a78bfa; /* RestWork — фиолетовый */
+  --grid-2:#34d399; /* Удалёнка — зелёный */
+  --grid-3:#fbbf24; /* 4я сетка — жёлтый */
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -36,7 +41,8 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-txt{font-size:13px;color:var(--faint)}
 .app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-.appbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;background:linear-gradient(180deg,rgba(7,11,20,.92),rgba(7,11,20,.55));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--stroke)}
+.appbar{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(7,11,20,.92),rgba(7,11,20,.55));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--stroke)}
+.appbar-top{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 18px 10px}
 .brand{display:flex;align-items:center;gap:11px}
 .logo{width:36px;height:36px;border-radius:11px;background:var(--accent);display:grid;place-items:center;box-shadow:0 8px 22px -6px rgba(56,189,248,.6);flex:none}
 .logo svg{width:20px;height:20px;color:#06121f}
@@ -46,6 +52,16 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--stroke);background:var(--glass);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:.18s;flex:none}
 .icon-btn:hover{background:var(--glass-2);color:var(--txt)}.icon-btn:active{transform:scale(.94)}
 .icon-btn svg{width:19px;height:19px}
+
+/* Шапка сеток — горизонтальный скролл */
+.grid-tabs-wrap{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding:0 14px 10px}
+.grid-tabs-wrap::-webkit-scrollbar{display:none}
+.grid-tabs{display:flex;gap:6px;width:max-content}
+.grid-tab{border:0;background:var(--glass);border:1px solid var(--stroke);color:var(--muted);font-family:var(--font-u);font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;transition:.18s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.grid-tab .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.grid-tab.on{color:#06121f;border-color:transparent}
+.grid-tab:active{transform:scale(.95)}
+
 .screen{display:none;padding:18px 16px 8px;animation:fade .35s ease both}
 .screen.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -100,8 +116,15 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .row-amt.pos{color:var(--pos)}.row-amt.neg{color:var(--neg)}
 .amt-sub{font-size:11px;font-weight:600;color:var(--faint)}
 .tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;background:rgba(251,191,36,.14);color:var(--warn)}
+.grid-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;color:#06121f}
 .head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
 .head-row h1{font-family:var(--font-d);font-size:19px;font-weight:700;letter-spacing:-.02em}
+/* Заголовок страницы сетки */
+.grid-page-header{margin-bottom:14px}
+.grid-page-title{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.grid-page-title h1{font-family:var(--font-d);font-size:19px;font-weight:700;letter-spacing:-.02em}
+.grid-dot-lg{width:10px;height:10px;border-radius:50%;flex:none}
+.grid-page-sub{font-size:12px;color:var(--faint)}
 .btn-add{display:inline-flex;align-items:center;gap:7px;border:0;background:var(--accent);color:#06121f;font-family:inherit;font-weight:700;font-size:13.5px;padding:10px 15px;border-radius:13px;cursor:pointer;transition:.18s;box-shadow:0 10px 24px -10px rgba(56,189,248,.8)}
 .btn-add:active{transform:scale(.96)}.btn-add svg{width:16px;height:16px}
 .empty{text-align:center;padding:46px 24px;color:var(--faint)}
@@ -150,6 +173,12 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:rgba(251,113,133,.45);color:var(--neg);background:#170f14}
 .spin-inline{display:inline-block;width:13px;height:13px;border:2px solid rgba(6,18,31,.25);border-top-color:#06121f;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* Секция доходы на странице сетки */
+.grid-section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.grid-section-head h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+/* Поле даты — яркое */
+.field input[type="date"]{color-scheme:dark}
+.date-hint{font-size:11px;color:var(--faint);margin-top:5px}
 </style>
 </head>
 <body>
@@ -160,15 +189,22 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 </div>
 <div class="app">
   <header class="appbar">
-    <div class="brand">
-      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-      <div class="brand-txt"><span class="brand-name" id="brandName">Моя сеть</span><span class="brand-sub">отчётность по рекламе</span></div>
+    <div class="appbar-top">
+      <div class="brand">
+        <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <div class="brand-txt"><span class="brand-name" id="brandName">Моя сеть</span><span class="brand-sub">отчётность по рекламе</span></div>
+      </div>
+      <button class="icon-btn" id="openSettings" aria-label="Настройки">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
-    <button class="icon-btn" id="openSettings" aria-label="Настройки">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <!-- Табы сеток — показываются только на экранах сеток -->
+    <div class="grid-tabs-wrap" id="gridTabsWrap" style="display:none">
+      <div class="grid-tabs" id="gridTabs"></div>
+    </div>
   </header>
   <main>
+    <!-- СВОДКА (общая) -->
     <section class="screen on" id="s-dash">
       <div class="seg" id="periodSeg" data-value="month">
         <button class="seg-btn on" data-value="month">Этот месяц</button>
@@ -176,28 +212,58 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
         <button class="seg-btn" data-value="all">Всё время</button>
       </div>
       <div class="kpis" id="kpis"></div>
+      <div class="panel"><div class="panel-h"><h2>Доход по сеткам</h2><span class="hint" id="byGridHint"></span></div><div id="byGrid"></div></div>
       <div class="panel"><div class="panel-h"><h2>Доход по каналам</h2><span class="hint" id="byChHint"></span></div><div id="byCh"></div></div>
       <div class="panel"><div class="panel-h"><h2>Помесячно</h2><span class="hint">6 мес.</span></div><div id="monthly"></div></div>
       <div class="panel"><div class="panel-h"><h2>Последние операции</h2></div><div id="recent"></div></div>
     </section>
-    <section class="screen" id="s-sales">
-      <div class="head-row"><h1>Продажи</h1><button class="btn-add" id="addSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Продажа</button></div>
-      <div class="list" id="listSales"></div>
+
+    <!-- СТРАНИЦА СЕТКИ (динамическая) -->
+    <section class="screen" id="s-grid">
+      <div class="grid-page-header">
+        <div class="grid-page-title">
+          <span class="grid-dot-lg" id="gridPageDot"></span>
+          <h1 id="gridPageTitle">Сетка</h1>
+        </div>
+        <div class="grid-page-sub" id="gridPageSub"></div>
+      </div>
+      <!-- Мини-сводка сетки -->
+      <div class="kpis" id="gridKpis"></div>
+      <!-- Помесячно сетки -->
+      <div class="panel"><div class="panel-h"><h2>Помесячно</h2><span class="hint">6 мес.</span></div><div id="gridMonthly"></div></div>
+      <!-- Продажи сетки -->
+      <div class="grid-section-head">
+        <h2>Продажи</h2>
+        <button class="btn-add" id="addGridSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Продажа</button>
+      </div>
+      <div class="list" id="gridSalesList"></div>
+      <!-- Расходы сетки -->
+      <div class="grid-section-head" style="margin-top:22px">
+        <h2>Расходы</h2>
+        <button class="btn-add" id="addGridExp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Расход</button>
+      </div>
+      <div class="list" id="gridExpList"></div>
     </section>
-    <section class="screen" id="s-exp">
-      <div class="head-row"><h1>Расходы</h1><button class="btn-add" id="addExp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Расход</button></div>
-      <div class="list" id="listExp"></div>
-    </section>
+
+    <!-- КАНАЛЫ -->
     <section class="screen" id="s-ch">
       <div class="head-row"><h1>Каналы</h1><button class="btn-add" id="addCh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Канал</button></div>
       <div class="list" id="listCh"></div>
     </section>
   </main>
   <nav class="tabbar">
-    <button class="tab on" data-screen="s-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Сводка</button>
-    <button class="tab" data-screen="s-sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7V3h10.6l6.4 6.4a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>Продажи</button>
-    <button class="tab" data-screen="s-exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M21 9h-5a2 2 0 0 0 0 4h5"/></svg>Расходы</button>
-    <button class="tab" data-screen="s-ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l4 4V7L7 11H4a1 1 0 0 0-1 0z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>Каналы</button>
+    <button class="tab on" data-screen="s-dash">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Сводка
+    </button>
+    <button class="tab" data-screen="s-grid" id="tabGrid">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l4 4V7L7 11H4a1 1 0 0 0-1 0z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>
+      Сетки
+    </button>
+    <button class="tab" data-screen="s-ch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l4 4V7L7 11H4a1 1 0 0 0-1 0z"/><circle cx="17" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><line x1="14" y1="8.5" x2="14" y2="15.5"/></svg>
+      Каналы
+    </button>
   </nav>
 </div>
 <div class="sheet-overlay" id="sheet"><div class="sheet" id="sheetInner"></div></div>
@@ -205,19 +271,16 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 
 <script>
 // ======================================================
-// Supabase REST API — без SDK, чистый fetch
-// Совместимо с Vercel, локальным открытием и iframe
+// Supabase REST API
 // ======================================================
 const SB_URL = 'https://eoregtvvmzrruztcrymz.supabase.co';
 const SB_KEY = 'sb_publishable_VCbbdd5Itt9Zx8j2Mjrp2g_xY4vtW4y';
 
-// Базовые CRUD операции через REST
 async function sbFetch(table, opts={}){
   const {method='GET', params={}, body, returning=false} = opts;
   let url = SB_URL+'/rest/v1/'+table;
   const qp = new URLSearchParams(params);
   if([...qp].length) url += '?'+qp.toString();
-
   const headers = {
     'apikey': SB_KEY,
     'Authorization': 'Bearer '+SB_KEY,
@@ -226,57 +289,47 @@ async function sbFetch(table, opts={}){
   };
   if(returning) headers['Prefer'] = 'return=representation';
   else if(method==='POST'||method==='PATCH') headers['Prefer'] = 'return=minimal';
-
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
+  const res = await fetch(url, {method, headers, body: body ? JSON.stringify(body) : undefined});
   if(!res.ok){
     let msg = res.statusText;
     try{ const e=await res.json(); msg=(e.message||e.error||msg)+' ('+res.status+')'; }catch(e){}
     throw new Error(msg);
-  }
-  if(res.status===204||res.status===201) {
-    // try to parse if there's content, otherwise return null
-    const text = await res.text();
-    if(!text||text.trim()==='') return null;
-    try{ return JSON.parse(text); }catch(e){ return null; }
   }
   const text = await res.text();
   if(!text||text.trim()==='') return null;
   try{ return JSON.parse(text); }catch(e){ return null; }
 }
 
-// Хелперы
 const sbGet    = (t, params={}) => sbFetch(t, {params});
 const sbInsert = (t, body, ret=false) => sbFetch(t, {method:'POST', body, returning:ret});
 const sbUpdate = (t, id, body) => sbFetch(t, {method:'PATCH', params:{id:'eq.'+id}, body});
 const sbDelete = (t, id) => sbFetch(t, {method:'DELETE', params:{id:'eq.'+id}});
-const sbUpsert = (t, body) => sbFetch(t, {method:'POST', params:{on_conflict:'id'}, body, returning:true, ...{extraHeaders:{'Prefer':'resolution=merge-duplicates,return=representation'}}});
 
-// Специальный upsert (merge-duplicates)
 async function sbUpsertSettings(body){
   const url = SB_URL+'/rest/v1/settings?on_conflict=id';
   const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer '+SB_KEY,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY,
+      'Content-Type': 'application/json', 'Accept': 'application/json',
       'Prefer': 'resolution=merge-duplicates,return=representation',
     },
     body: JSON.stringify(body),
   });
-  if(!res.ok){
-    let msg = res.statusText;
-    try{ const e=await res.json(); msg=(e.message||e.error||msg)+' ('+res.status+')'; }catch(e){}
-    throw new Error(msg);
-  }
+  if(!res.ok){ let msg=res.statusText; try{const e=await res.json();msg=(e.message||e.error||msg);}catch(e){} throw new Error(msg); }
   return res.status===204 ? null : res.json();
 }
+
+// ======================================================
+// КОНФИГ СЕТОК
+// ======================================================
+const GRIDS = [
+  { id: 'moskva',   name: 'Сетка Москва',   color: '#38bdf8', short: 'МСК' },
+  { id: 'restwork', name: 'RestWork',        color: '#a78bfa', short: 'RW'  },
+  { id: 'udalenka', name: 'Сетка Удалёнка', color: '#34d399', short: 'УДЛ' },
+];
+
+let activeGridId = GRIDS[0].id;
 
 // ======================================================
 const $=id=>document.getElementById(id);
@@ -297,6 +350,11 @@ function today(){return new Date().toISOString().slice(0,10);}
 function fmtDate(d){if(!d)return '';const p=String(d).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0].slice(2);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function chName(id){const c=state.channels.find(x=>x.id===id);return c?c.name:'—';}
+function gridByChannel(chId){
+  const ch=state.channels.find(x=>x.id===chId);
+  return ch?ch.grid_id||null:null;
+}
+function gridColor(gridId){const g=GRIDS.find(x=>x.id===gridId);return g?g.color:'var(--a1)';}
 function inPeriod(ds){
   if(period==='all')return true;
   const now=new Date(),d=new Date(String(ds).slice(0,10)+'T00:00:00');
@@ -332,12 +390,6 @@ const IC={
 // ====== DATA LOADING ======
 async function loadAll(){
   try{
-    const [ch,sl,ex] = await Promise.all([
-      sbGet('channels','order=created_at.asc'),
-      sbGet('sales','order=date.desc'),
-      sbGet('expenses','order=date.desc'),
-    ]);
-    // Note: sbGet with second arg as string — fix:
     const [channels, sales, expenses] = await Promise.all([
       sbFetch('channels',{params:{order:'created_at.asc'}}),
       sbFetch('sales',{params:{order:'date.desc'}}),
@@ -346,13 +398,10 @@ async function loadAll(){
     state.channels = channels||[];
     state.sales    = sales||[];
     state.expenses = expenses||[];
-
-    // Settings (maybeSingle via limit)
     try{
       const stArr = await sbFetch('settings',{params:{limit:'1'}});
       if(stArr&&stArr.length) state.settings={brand:stArr[0].brand||'Моя сеть',currency:stArr[0].currency||'₽'};
-    }catch(e){/* settings table might be empty */}
-
+    }catch(e){}
     renderAll();
     hideLoader();
   }catch(e){
@@ -373,16 +422,46 @@ async function reload(which){
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===name));
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.screen===name));
+  // Показываем табы сеток только на s-grid
+  $('gridTabsWrap').style.display = (name==='s-grid')?'block':'none';
   window.scrollTo({top:0});
 }
-function renderAll(){$('brandName').textContent=state.settings.brand||'Моя сеть';renderDash();renderSales();renderExp();renderCh();}
+
+function buildGridTabs(){
+  const wrap = $('gridTabs');
+  wrap.innerHTML = GRIDS.map(g=>`
+    <button class="grid-tab${g.id===activeGridId?' on':''}" data-gid="${g.id}" style="${g.id===activeGridId?`background:${g.color};border-color:${g.color};`:''}">
+      <span class="dot" style="background:${g.color};${g.id===activeGridId?'background:#06121f;':''}"></span>
+      ${esc(g.name)}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('.grid-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      activeGridId=btn.dataset.gid;
+      buildGridTabs();
+      renderGridPage();
+    });
+  });
+}
+
+function renderAll(){
+  $('brandName').textContent=state.settings.brand||'Моя сеть';
+  buildGridTabs();
+  renderDash();
+  renderGridPage();
+  renderCh();
+}
+
 function emptyState(ic,text,btnId,btnLabel){
   return '<div class="empty"><div class="e-ic">'+ic+'</div><p>'+text+'</p>'+(btnId?'<div class="e-cta"><button class="btn-add" id="'+btnId+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+btnLabel+'</button></div>':'')+'</div>';
 }
-function kpi(cls,label,value,sub){
+
+function kpi(cls,label,value,sub,accentColor){
   const ic=cls.indexOf('rev')===0?IC.rev:cls.indexOf('exp')===0?IC.exp:cls.indexOf('profit')===0?IC.profit:IC.count;
-  return '<div class="kpi '+cls+'"><div class="kpi-top"><span class="kpi-ic">'+ic+'</span><span>'+label+'</span></div><div class="kpi-val">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>';
+  const style=accentColor?` style="color:${accentColor};text-shadow:0 0 22px ${accentColor}55"`:''
+  return '<div class="kpi '+cls+'"><div class="kpi-top"><span class="kpi-ic">'+ic+'</span><span>'+label+'</span></div><div class="kpi-val"'+style+'>'+value+'</div><div class="kpi-sub">'+sub+'</div></div>';
 }
+
 function opRow(o){
   const isSale=o.t==='sale';
   const mgrKey=o.manager||'none';
@@ -390,23 +469,49 @@ function opRow(o){
   const net=hasMgr?myNet(o.amt,mgrKey):o.amt;
   const comm=hasMgr?commission(o.amt,mgrKey):0;
   const mgrLabel=hasMgr?mgr(mgrKey).label+'  −'+money(comm):'';
-  return '<button class="row" data-type="'+o.t+'" data-id="'+o.id+'"><span class="row-ic '+(isSale?'in':'out')+'">'+(isSale?IC.in:IC.out)+'</span><span class="row-main"><span class="row-title">'+esc(o.title)+'</span><span class="row-sub">'+esc(o.sub)+(fmtDate(o.date)?(o.sub?' · ':'')+fmtDate(o.date):'')+(hasMgr?' · <span style="color:var(--warn)">'+esc(mgrLabel)+'</span>':'')+(o.pending?' <span class="tag">ожидает</span>':'')+'</span></span><span class="row-amt '+(isSale?'pos':'neg')+'"><span>'+(isSale?'+':'−')+money(hasMgr?net:o.amt)+'</span>'+(hasMgr?'<span class="amt-sub">из '+money(o.amt)+'</span>':'')+'</span></button>';
+  // grid badge
+  let gridBadge='';
+  if(o.gridId){
+    const g=GRIDS.find(x=>x.id===o.gridId);
+    if(g) gridBadge=`<span class="grid-badge" style="background:${g.color}22;color:${g.color}">${esc(g.short)}</span>`;
+  }
+  return '<button class="row" data-type="'+o.t+'" data-id="'+o.id+'"><span class="row-ic '+(isSale?'in':'out')+'">'+(isSale?IC.in:IC.out)+'</span><span class="row-main"><span class="row-title">'+esc(o.title)+'</span><span class="row-sub">'+gridBadge+esc(o.sub)+(fmtDate(o.date)?(o.sub||o.gridId?' · ':'')+fmtDate(o.date):'')+(hasMgr?' · <span style="color:var(--warn)">'+esc(mgrLabel)+'</span>':'')+(o.pending?' <span class="tag">ожидает</span>':'')+'</span></span><span class="row-amt '+(isSale?'pos':'neg')+'"><span>'+(isSale?'+':'−')+money(hasMgr?net:o.amt)+'</span>'+(hasMgr?'<span class="amt-sub">из '+money(o.amt)+'</span>':'')+'</span></button>';
 }
+
+// ====== DASHBOARD ======
 function renderDash(){
   const sP=state.sales.filter(s=>inPeriod(s.date));
-  const eP=state.expenses.filter(e=>inPeriod(e.date));
+  const eP=state.expenses.filter(e=>inPeriod(e.date)&&!e.grid_id); // общие расходы без сетки
+  const ePAll=state.expenses.filter(e=>inPeriod(e.date));
   const rev=sP.reduce((a,b)=>a+(+b.amount||0),0);
-  const exp=eP.reduce((a,b)=>a+(+b.amount||0),0);
+  const exp=ePAll.reduce((a,b)=>a+(+b.amount||0),0);
   const totalComm=sP.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
   const netRev=rev-totalComm;
-  const profit=netRev-exp,cnt=sP.length,avg=cnt?Math.round(rev/cnt):0;
-  $('kpis').innerHTML=kpi('rev','Доход (всего)',money(rev),sP.length?cnt+' прод.':'нет продаж')+kpi('rev','Мой доход',money(netRev),totalComm>0?'комиссии: −'+money(totalComm):'без комиссий')+kpi('exp','Расход',money(exp),eP.length?eP.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период');
+  const profit=netRev-exp,cnt=sP.length;
+  $('kpis').innerHTML=kpi('rev','Доход (всего)',money(rev),cnt?cnt+' прод.':'нет продаж')+kpi('rev','Мой доход',money(netRev),totalComm>0?'комиссии: −'+money(totalComm):'без комиссий')+kpi('exp','Расход',money(exp),ePAll.length?ePAll.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период');
+
+  // По сеткам
+  const gridMap={};
+  GRIDS.forEach(g=>{gridMap[g.id]={name:g.name,color:g.color,amt:0};});
+  sP.forEach(s=>{
+    const ch=state.channels.find(x=>x.id===s.channel_id);
+    const gid=s.grid_id||(ch?ch.grid_id:null);
+    if(gid&&gridMap[gid]) gridMap[gid].amt+=(+s.amount||0);
+  });
+  const gridArr=Object.values(gridMap).filter(x=>x.amt>0).sort((a,b)=>b.amt-a.amt);
+  const gMax=Math.max(1,...gridArr.map(x=>x.amt));
+  $('byGridHint').textContent=gridArr.length?gridArr.length+' сетки':'';
+  $('byGrid').innerHTML=gridArr.length?gridArr.map(x=>`<div class="bar-row"><div class="bar-meta"><span class="bar-name">${esc(x.name)}</span><span class="bar-amt">${money(x.amt)}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(5,Math.round(x.amt/gMax*100))}%;background:${x.color};box-shadow:0 0 12px -2px ${x.color}66"></div></div></div>`).join(''):'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Пока нет данных за период</p>';
+
+  // По каналам
   const map={};
   sP.forEach(s=>{const k=s.channel_id||'_';map[k]=map[k]||{name:chName(s.channel_id),amt:0};map[k].amt+=(+s.amount||0);});
   const arr=Object.values(map).sort((a,b)=>b.amt-a.amt).slice(0,6);
   const max=Math.max(1,...arr.map(x=>x.amt));
   $('byChHint').textContent=arr.length?arr.length+' кан.':'';
   $('byCh').innerHTML=arr.length?arr.map(x=>'<div class="bar-row"><div class="bar-meta"><span class="bar-name">'+esc(x.name)+'</span><span class="bar-amt">'+money(x.amt)+'</span></div><div class="bar-track"><div class="bar-fill" style="width:'+Math.max(5,Math.round(x.amt/max*100))+'%"></div></div></div>').join(''):'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Пока нет данных за период</p>';
+
+  // Помесячно
   const now=new Date(),months=[];
   for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:d.toISOString().slice(0,7),label:d.toLocaleDateString('ru-RU',{month:'short'}).replace('.',''),rev:0,exp:0});}
   const mi={};months.forEach(m=>mi[m.key]=m);
@@ -414,30 +519,102 @@ function renderDash(){
   state.expenses.forEach(e=>{const k=String(e.date).slice(0,7);if(mi[k])mi[k].exp+=(+e.amount||0);});
   const mMax=Math.max(1,...months.map(m=>Math.max(m.rev,m.exp)));
   $('monthly').innerHTML='<div class="chart"><div class="chart-bars">'+months.map(m=>'<div class="month"><div class="cols"><div class="col rev" style="height:'+(m.rev?Math.max(3,m.rev/mMax*100):0)+'%"></div><div class="col exp" style="height:'+(m.exp?Math.max(3,m.exp/mMax*100):0)+'%"></div></div><div class="m-label">'+m.label+'</div></div>').join('')+'</div><div class="legend"><span class="lg rev">Доход</span><span class="lg exp">Расход</span></div></div>';
+
+  // Последние операции
   const ops=[];
-  state.sales.forEach(s=>ops.push({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none'}));
-  state.expenses.forEach(e=>ops.push({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0}));
+  state.sales.forEach(s=>{
+    const ch=state.channels.find(x=>x.id===s.channel_id);
+    const gid=s.grid_id||(ch?ch.grid_id:null);
+    ops.push({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none',gridId:gid});
+  });
+  state.expenses.forEach(e=>{ops.push({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0,gridId:e.grid_id||null});});
   ops.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  $('recent').innerHTML=ops.length?'<div class="list" style="margin-top:0">'+ops.slice(0,6).map(o=>opRow(o)).join('')+'</div>':'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Здесь появятся ваши операции</p>';
+  $('recent').innerHTML=ops.length?'<div class="list" style="margin-top:0">'+ops.slice(0,8).map(o=>opRow(o)).join('')+'</div>':'<p style="color:var(--faint);font-size:13px;text-align:center;padding:8px 0">Здесь появятся ваши операции</p>';
 }
-function renderSales(){
-  const list=[...state.sales].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  if(!list.length){$('listSales').innerHTML=emptyState(IC.rev,'Добавь первую продажу рекламы — посчитаем доход.','emptySale','Добавить продажу');return;}
-  $('listSales').innerHTML=list.map(s=>opRow({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id),sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none'})).join('');
+
+// ====== GRID PAGE ======
+function renderGridPage(){
+  const grid=GRIDS.find(g=>g.id===activeGridId)||GRIDS[0];
+
+  // Заголовок
+  $('gridPageDot').style.background=grid.color;
+  $('gridPageTitle').textContent=grid.name;
+
+  // Каналы этой сетки
+  const gridChs=state.channels.filter(c=>c.grid_id===grid.id);
+  const chIds=new Set(gridChs.map(c=>c.id));
+
+  // Продажи: либо привязаны к grid_id напрямую, либо через канал
+  const sales=state.sales.filter(s=>s.grid_id===grid.id||(s.channel_id&&chIds.has(s.channel_id)));
+  // Расходы привязаны к grid_id
+  const exps=state.expenses.filter(e=>e.grid_id===grid.id);
+
+  $('gridPageSub').textContent=gridChs.length+' кан. · '+sales.length+' продаж';
+
+  // KPI
+  const rev=sales.reduce((a,b)=>a+(+b.amount||0),0);
+  const exp=exps.reduce((a,b)=>a+(+b.amount||0),0);
+  const totalComm=sales.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
+  const netRev=rev-totalComm;
+  const profit=netRev-exp;
+  $('gridKpis').innerHTML=
+    kpi('rev','Доход',money(rev),sales.length?sales.length+' прод.':'нет продаж',grid.color)+
+    kpi('exp','Расход',money(exp),exps.length?exps.length+' расходов':'нет расходов')+
+    kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус'));
+
+  // Помесячно
+  const now=new Date(),months=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:d.toISOString().slice(0,7),label:d.toLocaleDateString('ru-RU',{month:'short'}).replace('.',''),rev:0,exp:0});}
+  const mi={};months.forEach(m=>mi[m.key]=m);
+  sales.forEach(s=>{const k=String(s.date).slice(0,7);if(mi[k])mi[k].rev+=(+s.amount||0);});
+  exps.forEach(e=>{const k=String(e.date).slice(0,7);if(mi[k])mi[k].exp+=(+e.amount||0);});
+  const mMax=Math.max(1,...months.map(m=>Math.max(m.rev,m.exp)));
+  $('gridMonthly').innerHTML='<div class="chart"><div class="chart-bars">'+months.map(m=>`<div class="month"><div class="cols"><div class="col rev" style="height:${m.rev?Math.max(3,m.rev/mMax*100):0}%;background:${grid.color}"></div><div class="col exp" style="height:${m.exp?Math.max(3,m.exp/mMax*100):0}%"></div></div><div class="m-label">${m.label}</div></div>`).join('')+'</div><div class="legend"><span class="lg rev" style="--a1:'+grid.color+'">Доход</span><span class="lg exp">Расход</span></div></div>';
+
+  // Список продаж
+  const sortedSales=[...sales].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  if(!sortedSales.length){
+    $('gridSalesList').innerHTML=emptyState(IC.rev,'Добавь первую продажу для '+esc(grid.name),'','');
+  } else {
+    $('gridSalesList').innerHTML=sortedSales.map(s=>opRow({t:'sale',id:s.id,date:s.date,title:chName(s.channel_id)||'Без канала',sub:[s.client,FORMATS[s.format]].filter(Boolean).join(' · ')||'реклама',amt:+s.amount||0,pending:s.status==='pending',manager:s.manager||'none',gridId:grid.id})).join('');
+  }
+
+  // Список расходов
+  const sortedExps=[...exps].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  if(!sortedExps.length){
+    $('gridExpList').innerHTML=emptyState(IC.exp,'Нет расходов для '+esc(grid.name),'','');
+  } else {
+    $('gridExpList').innerHTML=sortedExps.map(e=>opRow({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0,gridId:grid.id})).join('');
+  }
 }
-function renderExp(){
-  const list=[...state.expenses].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  if(!list.length){$('listExp').innerHTML=emptyState(IC.exp,'Записывай расходы — на контент, сервисы, налоги.','emptyExp','Добавить расход');return;}
-  $('listExp').innerHTML=list.map(e=>opRow({t:'expense',id:e.id,date:e.date,title:e.category||'Расход',sub:e.note||'',amt:+e.amount||0})).join('');
-}
+
 function renderCh(){
   if(!state.channels.length){$('listCh').innerHTML=emptyState(IC.ch,'Добавь каналы своей сети — по ним пойдёт учёт продаж.','emptyCh','Добавить канал');return;}
-  $('listCh').innerHTML=state.channels.map(c=>{
-    const sales=state.sales.filter(s=>s.channel_id===c.id);
-    const earn=sales.reduce((a,b)=>a+(+b.amount||0),0);
-    const sub=[c.handle?('@'+c.handle):'',c.subs?(nf.format(c.subs)+' подп.'):''].filter(Boolean).join(' · ')||'нет данных';
-    return '<button class="row" data-type="channel" data-id="'+c.id+'"><span class="row-ic ch">'+IC.ch+'</span><span class="row-main"><span class="row-title">'+esc(c.name)+'</span><span class="row-sub">'+esc(sub)+'</span></span><span class="row-amt"><span>'+money(earn)+'</span><span class="amt-sub">'+sales.length+' рекл.</span></span></button>';
-  }).join('');
+  // Группируем по сеткам
+  let html='';
+  GRIDS.forEach(grid=>{
+    const chs=state.channels.filter(c=>c.grid_id===grid.id);
+    if(!chs.length)return;
+    html+=`<div style="margin-bottom:6px;margin-top:14px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:${grid.color};display:inline-block;flex:none"></span><span style="font-size:12px;font-weight:700;color:var(--muted)">${esc(grid.name)}</span></div>`;
+    html+=chs.map(c=>{
+      const sales=state.sales.filter(s=>s.channel_id===c.id);
+      const earn=sales.reduce((a,b)=>a+(+b.amount||0),0);
+      const sub=[c.handle?('@'+c.handle):'',c.subs?(nf.format(c.subs)+' подп.'):''].filter(Boolean).join(' · ')||'нет данных';
+      return '<button class="row" data-type="channel" data-id="'+c.id+'"><span class="row-ic ch" style="background:'+grid.color+'22;color:'+grid.color+'">'+IC.ch+'</span><span class="row-main"><span class="row-title">'+esc(c.name)+'</span><span class="row-sub">'+esc(sub)+'</span></span><span class="row-amt"><span>'+money(earn)+'</span><span class="amt-sub">'+sales.length+' рекл.</span></span></button>';
+    }).join('');
+  });
+  // Каналы без сетки
+  const noChs=state.channels.filter(c=>!c.grid_id);
+  if(noChs.length){
+    html+=`<div style="margin-bottom:6px;margin-top:14px;font-size:12px;font-weight:700;color:var(--muted)">Без сетки</div>`;
+    html+=noChs.map(c=>{
+      const sales=state.sales.filter(s=>s.channel_id===c.id);
+      const earn=sales.reduce((a,b)=>a+(+b.amount||0),0);
+      const sub=[c.handle?('@'+c.handle):'',c.subs?(nf.format(c.subs)+' подп.'):''].filter(Boolean).join(' · ')||'нет данных';
+      return '<button class="row" data-type="channel" data-id="'+c.id+'"><span class="row-ic ch">'+IC.ch+'</span><span class="row-main"><span class="row-title">'+esc(c.name)+'</span><span class="row-sub">'+esc(sub)+'</span></span><span class="row-amt"><span>'+money(earn)+'</span><span class="amt-sub">'+sales.length+' рекл.</span></span></button>';
+    }).join('');
+  }
+  $('listCh').innerHTML=html||emptyState(IC.ch,'Добавь каналы','emptyCh','Добавить канал');
 }
 
 // ====== SHEET ======
@@ -459,14 +636,16 @@ function setBtnReset(btn,text){btn.disabled=false;btn.textContent=text;}
 // ====== CHANNEL FORM ======
 function openChannelForm(id){
   const ed=id?state.channels.find(x=>x.id===id):null;
+  const gridOpts=GRIDS.map(g=>'<option value="'+g.id+'"'+(ed&&ed.grid_id===g.id?' selected':'')+'>'+esc(g.name)+'</option>').join('');
   openSheet(sheetHead(ed?'Канал':'Новый канал')+
     '<div class="field"><label>Название</label><input id="cf_name" type="text" placeholder="напр. IT Jobs" value="'+esc(ed?ed.name:'')+'"></div>'+
+    '<div class="field"><label>Сетка</label><select id="cf_grid"><option value="">— без сетки —</option>'+gridOpts+'</select></div>'+
     '<div class="field"><label>Юзернейм (необязательно)</label><input id="cf_handle" type="text" placeholder="@channel" value="'+esc(ed?(ed.handle?'@'+ed.handle:''):'')+'"></div>'+
     '<div class="field"><label>Подписчиков (необязательно)</label><input id="cf_subs" type="text" inputmode="numeric" placeholder="" value="'+(ed&&ed.subs!=null?ed.subs:'')+'"></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="cf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="cf_save">Сохранить</button></div>');
   bindClose();
   $('cf_save').addEventListener('click',()=>saveChannel(id));
-  if(ed) $('cf_del').addEventListener('click',()=>delRow('channels',id,'Удалить канал? Продажи останутся без названия.'));
+  if(ed) $('cf_del').addEventListener('click',()=>delRow('channels',id,'Удалить канал?'));
 }
 async function saveChannel(id){
   const btn=$('cf_save');
@@ -475,73 +654,94 @@ async function saveChannel(id){
   const handle=val('cf_handle').trim().replace(/^@+/,'')||null;
   const subsRaw=val('cf_subs').trim().replace(/\s/g,'');
   const subsN=subsRaw?parseInt(subsRaw,10):null;
-  const rec={name, handle, subs:(subsN&&!isNaN(subsN))?subsN:null};
+  const grid_id=val('cf_grid')||null;
+  const rec={name, handle, subs:(subsN&&!isNaN(subsN))?subsN:null, grid_id};
   setBtnLoading(btn,'Сохраняю…');
   try{
-    if(id){
-      await sbUpdate('channels',id,rec);
-    } else {
-      await sbInsert('channels',rec);
-    }
-    await reload('channels');
-    renderAll();closeSheet();
-    toast(id?'Канал обновлён':'Канал добавлен');
-  }catch(e){
-    setBtnReset(btn,'Сохранить');
-    toast('Ошибка: '+e.message, true);
-  }
+    id?await sbUpdate('channels',id,rec):await sbInsert('channels',rec);
+    await reload('channels');renderAll();closeSheet();toast(id?'Канал обновлён':'Канал добавлен');
+  }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка: '+e.message, true);}
 }
 
 // ====== SALE FORM ======
-function openSaleForm(id){
+// preGridId — предустановленная сетка (когда открываем с экрана сетки)
+function openSaleForm(id, preGridId){
   const ed=id?state.sales.find(x=>x.id===id):null;
   const hasCh=state.channels.length>0;
-  const chOpts=state.channels.map(c=>'<option value="'+c.id+'"'+(ed&&ed.channel_id===c.id?' selected':'')+'>'+esc(c.name)+'</option>').join('');
+  // Фильтруем каналы по сетке если она предустановлена и нет редактирования
+  const defGridId = ed ? (ed.grid_id||'') : (preGridId||'');
+  const filterChs = defGridId ? state.channels.filter(c=>c.grid_id===defGridId) : state.channels;
+  const chOpts=filterChs.map(c=>'<option value="'+c.id+'"'+(ed&&ed.channel_id===c.id?' selected':'')+'>'+esc(c.name)+'</option>').join('');
+  const allChOpts=state.channels.map(c=>'<option value="'+c.id+'"'+(ed&&ed.channel_id===c.id?' selected':'')+'>'+esc(c.name)+'</option>').join('');
   const fmtOpts=Object.keys(FORMATS).map(k=>'<option value="'+k+'"'+((ed&&ed.format===k)||(!ed&&k==='post24')?' selected':'')+'>'+FORMATS[k]+'</option>').join('');
   const st=ed?(ed.status||'paid'):'paid';
+  const gridOpts=GRIDS.map(g=>'<option value="'+g.id+'"'+(defGridId===g.id?' selected':'')+'>'+esc(g.name)+'</option>').join('');
+
   openSheet(sheetHead(ed?'Продажа':'Новая продажа')+
+    '<div class="field"><label>Сетка</label><select id="sf_grid"><option value="">— общая —</option>'+gridOpts+'</select></div>'+
     '<div class="field"><label>Канал</label>'+
-    (hasCh?'<select id="sf_channel"><option value="">— выбери канал —</option>'+chOpts+'<option value="__new__">+ Новый канал…</option></select>':'')+
+    (hasCh?'<select id="sf_channel"><option value="">— выбери канал —</option>'+allChOpts+'<option value="__new__">+ Новый канал…</option></select>':'')+
     '<input id="sf_newch" type="text" placeholder="Название канала" class="'+(hasCh?'hidden':'')+'" style="margin-top:'+(hasCh?'10px':'0')+'"></div>'+
     '<div class="field"><label>Клиент / рекламодатель</label><input id="sf_client" type="text" placeholder="напр. SkillBox" value="'+esc(ed?ed.client||'':'')+'"></div>'+
     '<div class="field"><label>Формат</label><select id="sf_format">'+fmtOpts+'</select></div>'+
-    '<div class="two"><div class="field"><label>Сумма</label><input id="sf_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
-    '<div class="field"><label>Дата</label><input id="sf_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"></div></div>'+
+    '<div class="two">'+
+      '<div class="field"><label>Сумма</label><input id="sf_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
+      '<div class="field"><label>Дата продажи</label><input id="sf_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"><div class="date-hint">Можно указать прошедшую дату</div></div>'+
+    '</div>'+
     '<div class="field"><label>Статус оплаты</label><div class="seg" id="sf_status" data-value="'+st+'"><button class="seg-btn'+(st==='paid'?' on':'')+'" data-value="paid">Оплачено</button><button class="seg-btn'+(st==='pending'?' on':'')+'" data-value="pending">Ожидает</button></div></div>'+
     '<div class="field"><label>Менеджер продажи</label><select id="sf_mgr"><option value="none"'+((!ed||!ed.manager)?' selected':'')+'>Я сам (без комиссии)</option><option value="maxim"'+(ed&&ed.manager==='maxim'?' selected':'')+'>Максим — 50%</option><option value="leha"'+(ed&&ed.manager==='leha'?' selected':'')+'>Лёха — 40%</option></select></div>'+
     '<div class="field"><label>Заметка</label><textarea id="sf_note" placeholder="комментарий (необязательно)">'+esc(ed?ed.note||'':'')+'</textarea></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="sf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="sf_save">Сохранить</button></div>');
   bindClose();bindSeg($('sheetInner'));
-  const sel=$('sf_channel');
-  if(sel) sel.addEventListener('change',()=>{
-    const isNew=sel.value==='__new__';
+
+  // При смене сетки — фильтруем каналы
+  const gridSel=$('sf_grid');
+  const chSel=$('sf_channel');
+  if(gridSel&&chSel){
+    gridSel.addEventListener('change',()=>{
+      const gid=gridSel.value;
+      const filtered=gid?state.channels.filter(c=>c.grid_id===gid):state.channels;
+      chSel.innerHTML='<option value="">— выбери канал —</option>'+filtered.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'<option value="__new__">+ Новый канал…</option>';
+    });
+  }
+  if(chSel) chSel.addEventListener('change',()=>{
+    const isNew=chSel.value==='__new__';
     $('sf_newch').classList.toggle('hidden',!isNew);
     if(isNew) $('sf_newch').focus();
   });
   $('sf_save').addEventListener('click',()=>saveSale(id));
   if(ed) $('sf_del').addEventListener('click',()=>delRow('sales',id,'Удалить эту продажу?'));
 }
+
 async function saveSale(id){
   const btn=$('sf_save');
-  const sel=$('sf_channel');
-  let channelId=sel?sel.value:'';
-  const needNewCh=!state.channels.length||(sel&&sel.value==='__new__');
+  const chSel=$('sf_channel');
+  let channelId=chSel?chSel.value:'';
+  const needNewCh=!state.channels.length||(chSel&&chSel.value==='__new__');
   if(needNewCh){
     const name=val('sf_newch').trim();
     if(!name){toast('Укажи название канала');return;}
     setBtnLoading(btn,'Создаю канал…');
     try{
-      const newCh=await sbInsert('channels',{name},true);
+      const newCh=await sbInsert('channels',{name,grid_id:val('sf_grid')||null},true);
       await reload('channels');
-      // find newly created channel by name
       const found=state.channels.find(c=>c.name===name);
       channelId=found?found.id:(newCh&&newCh[0]?newCh[0].id:'');
     }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка канала: '+e.message,true);return;}
   }
-  if(!channelId){toast('Выбери канал');setBtnReset(btn,'Сохранить');return;}
   const amount=parseAmt(val('sf_amount'));
   if(!(amount>0)){toast('Введи сумму');setBtnReset(btn,'Сохранить');return;}
-  const rec={channel_id:channelId,amount,date:val('sf_date')||today(),client:val('sf_client').trim(),format:val('sf_format'),status:($('sf_status')||{dataset:{value:'paid'}}).dataset.value||'paid',note:val('sf_note').trim(),manager:val('sf_mgr')||'none'};
+  const rec={
+    channel_id:channelId||null,
+    grid_id:val('sf_grid')||null,
+    amount,
+    date:val('sf_date')||today(),
+    client:val('sf_client').trim(),
+    format:val('sf_format'),
+    status:($('sf_status')||{dataset:{value:'paid'}}).dataset.value||'paid',
+    note:val('sf_note').trim(),
+    manager:val('sf_mgr')||'none'
+  };
   setBtnLoading(btn,'Сохраняю…');
   try{
     id?await sbUpdate('sales',id,rec):await sbInsert('sales',rec);
@@ -550,24 +750,30 @@ async function saveSale(id){
 }
 
 // ====== EXPENSE FORM ======
-function openExpenseForm(id){
+function openExpenseForm(id, preGridId){
   const ed=id?state.expenses.find(x=>x.id===id):null;
+  const defGridId=ed?(ed.grid_id||''):(preGridId||'');
   const catOpts=CATS.map(c=>'<option value="'+c+'"'+((ed&&ed.category===c)?' selected':'')+'>'+c+'</option>').join('');
+  const gridOpts=GRIDS.map(g=>'<option value="'+g.id+'"'+(defGridId===g.id?' selected':'')+'>'+esc(g.name)+'</option>').join('');
   openSheet(sheetHead(ed?'Расход':'Новый расход')+
+    '<div class="field"><label>Сетка (необязательно)</label><select id="ef_grid"><option value="">— общий расход —</option>'+gridOpts+'</select></div>'+
     '<div class="field"><label>Категория</label><select id="ef_cat">'+catOpts+'</select></div>'+
-    '<div class="two"><div class="field"><label>Сумма</label><input id="ef_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
-    '<div class="field"><label>Дата</label><input id="ef_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"></div></div>'+
+    '<div class="two">'+
+      '<div class="field"><label>Сумма</label><input id="ef_amount" type="text" inputmode="decimal" placeholder="0" value="'+(ed?ed.amount:'')+'"></div>'+
+      '<div class="field"><label>Дата расхода</label><input id="ef_date" type="date" value="'+(ed?String(ed.date).slice(0,10):today())+'"><div class="date-hint">Можно указать прошедшую дату</div></div>'+
+    '</div>'+
     '<div class="field"><label>Заметка</label><textarea id="ef_note" placeholder="на что потрачено">'+esc(ed?ed.note||'':'')+'</textarea></div>'+
     '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="ef_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="ef_save">Сохранить</button></div>');
   bindClose();
   $('ef_save').addEventListener('click',()=>saveExpense(id));
   if(ed) $('ef_del').addEventListener('click',()=>delRow('expenses',id,'Удалить этот расход?'));
 }
+
 async function saveExpense(id){
   const btn=$('ef_save');
   const amount=parseAmt(val('ef_amount'));
   if(!(amount>0)){toast('Введи сумму');return;}
-  const rec={category:val('ef_cat'),amount,date:val('ef_date')||today(),note:val('ef_note').trim()};
+  const rec={category:val('ef_cat'),amount,date:val('ef_date')||today(),note:val('ef_note').trim(),grid_id:val('ef_grid')||null};
   setBtnLoading(btn,'Сохраняю…');
   try{
     id?await sbUpdate('expenses',id,rec):await sbInsert('expenses',rec);
@@ -612,7 +818,7 @@ async function saveSettings(){
   }catch(e){toast('Ошибка: '+e.message,true);}
 }
 function exportData(){
-  const data={app:'tg-otchetnost',v:2,exportedAt:new Date().toISOString(),settings:state.settings,channels:state.channels,sales:state.sales,expenses:state.expenses};
+  const data={app:'tg-otchetnost',v:3,exportedAt:new Date().toISOString(),settings:state.settings,channels:state.channels,sales:state.sales,expenses:state.expenses,grids:GRIDS};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='otchet-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1500);toast('Файл выгружен');
@@ -623,15 +829,15 @@ async function importData(file){
   try{
     const idMap={};
     if(Array.isArray(d.channels)&&d.channels.length){
-      const rows=d.channels.map(c=>({name:c.name||'Канал',handle:c.handle||null,subs:c.subs!=null?c.subs:null}));
+      const rows=d.channels.map(c=>({name:c.name||'Канал',handle:c.handle||null,subs:c.subs!=null?c.subs:null,grid_id:c.grid_id||null}));
       const ins=await sbInsert('channels',rows,true);
       if(ins) d.channels.forEach((c,i)=>{if(ins[i])idMap[c.id]=ins[i].id;});
     }
     if(Array.isArray(d.sales)&&d.sales.length){
-      await sbInsert('sales',d.sales.map(s=>({channel_id:idMap[s.channelId]||idMap[s.channel_id]||null,amount:s.amount||0,date:String(s.date||today()).slice(0,10),client:s.client||'',format:s.format||'other',status:s.status||'paid',note:s.note||''})));
+      await sbInsert('sales',d.sales.map(s=>({channel_id:idMap[s.channel_id]||null,grid_id:s.grid_id||null,amount:s.amount||0,date:String(s.date||today()).slice(0,10),client:s.client||'',format:s.format||'other',status:s.status||'paid',note:s.note||'',manager:s.manager||'none'})));
     }
     if(Array.isArray(d.expenses)&&d.expenses.length){
-      await sbInsert('expenses',d.expenses.map(e=>({amount:e.amount||0,date:String(e.date||today()).slice(0,10),category:e.category||'Прочее',note:e.note||''})));
+      await sbInsert('expenses',d.expenses.map(e=>({amount:e.amount||0,date:String(e.date||today()).slice(0,10),category:e.category||'Прочее',note:e.note||'',grid_id:e.grid_id||null})));
     }
     if(d.settings) await sbUpsertSettings({id:1,brand:d.settings.brand||'Моя сеть',currency:d.settings.currency||'₽'});
     await loadAll();closeSheet();toast('Импортировано');
@@ -640,7 +846,6 @@ async function importData(file){
 async function clearAll(){
   if(!confirm('Удалить ВСЕ данные без возможности восстановления?'))return;
   try{
-    // Delete all rows using neq on a UUID that never exists
     const never='00000000-0000-0000-0000-000000000000';
     await Promise.all([
       sbFetch('sales',    {method:'DELETE', params:{id:'neq.'+never}}),
@@ -655,20 +860,20 @@ async function clearAll(){
 document.addEventListener('click',e=>{
   const row=e.target.closest('.row[data-id]');if(!row)return;
   const t=row.dataset.type,id=row.dataset.id;
-  if(t==='sale')openSaleForm(id);else if(t==='expense')openExpenseForm(id);else if(t==='channel')openChannelForm(id);
+  if(t==='sale') openSaleForm(id);
+  else if(t==='expense') openExpenseForm(id);
+  else if(t==='channel') openChannelForm(id);
 });
 document.addEventListener('click',e=>{
-  if(e.target.closest('#emptySale'))openSaleForm();
-  else if(e.target.closest('#emptyExp'))openExpenseForm();
-  else if(e.target.closest('#emptyCh'))openChannelForm();
+  if(e.target.closest('#emptyCh')) openChannelForm();
 });
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showScreen(b.dataset.screen)));
 $('periodSeg').querySelectorAll('.seg-btn').forEach(btn=>btn.addEventListener('click',()=>{
   $('periodSeg').querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');period=btn.dataset.value;renderDash();
 }));
 $('openSettings').addEventListener('click',openSettings);
-$('addSale').addEventListener('click',()=>openSaleForm());
-$('addExp').addEventListener('click',()=>openExpenseForm());
+$('addGridSale').addEventListener('click',()=>openSaleForm(null, activeGridId));
+$('addGridExp').addEventListener('click',()=>openExpenseForm(null, activeGridId));
 $('addCh').addEventListener('click',()=>openChannelForm());
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();});
