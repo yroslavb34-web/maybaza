@@ -179,6 +179,88 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 /* Поле даты — яркое */
 .field input[type="date"]{color-scheme:dark}
 .date-hint{font-size:11px;color:var(--faint);margin-top:5px}
+
+/* ========== LIGHT THEME ========== */
+body.theme-light {
+  --bg: #f8fafc;
+  --bg2: #ffffff;
+  --glass: rgba(255,255,255,.92);
+  --glass-2: rgba(255,255,255,.98);
+  --stroke: #e2e8f0;
+  --stroke-2: #cbd5e1;
+  --txt: #0f172a;
+  --muted: #475569;
+  --faint: #94a3b8;
+  --shadow: 0 10px 30px -12px rgba(15,23,42,.1);
+  color-scheme: light;
+}
+
+/* Light theme specific tweaks */
+body.theme-light .appbar {
+  background: linear-gradient(180deg, rgba(248,250,252,.95), rgba(248,250,252,.85));
+  border-bottom-color: var(--stroke);
+}
+body.theme-light .tabbar {
+  background: linear-gradient(0deg, rgba(248,250,252,.98), rgba(248,250,252,.92));
+  border-top-color: var(--stroke);
+}
+body.theme-light .sheet {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-color: var(--stroke-2);
+}
+body.theme-light .toast {
+  background: #ffffff;
+  border-color: var(--stroke-2);
+  color: var(--txt);
+  box-shadow: 0 10px 30px -10px rgba(15,23,42,.15);
+}
+body.theme-light .toast.err {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+body.theme-light .field input,
+body.theme-light .field select,
+body.theme-light .field textarea {
+  background: #ffffff;
+  border-color: var(--stroke);
+  color: var(--txt);
+}
+body.theme-light .field input:focus,
+body.theme-light .field select:focus,
+body.theme-light .field textarea:focus {
+  border-color: var(--a2);
+  box-shadow: 0 0 0 3px rgba(129,140,248,.12);
+}
+body.theme-light .seg {
+  background: #f1f5f9;
+  border-color: var(--stroke);
+}
+body.theme-light .kpi {
+  background: #ffffff;
+  border-color: var(--stroke);
+}
+body.theme-light .panel {
+  background: #ffffff;
+  border-color: var(--stroke);
+}
+body.theme-light .row {
+  background: #ffffff;
+  border-color: var(--stroke);
+}
+body.theme-light .row:hover {
+  background: #f8fafc;
+}
+body.theme-light .loader-logo {
+  box-shadow: 0 8px 24px -6px rgba(15,23,42,.15);
+}
+body.theme-light body::before,
+body.theme-light body::after {
+  opacity: .25;
+}
+body.theme-light .field input[type="date"] {
+  color-scheme: light;
+}
 </style>
 </head>
 <body>
@@ -206,6 +288,15 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
   <main>
     <!-- СВОДКА (общая) -->
     <section class="screen on" id="s-dash">
+      <!-- Быстрая статистика — всегда видна, независимо от выбранного периода -->
+      <div style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 4px 6px">
+          <span style="font-size:12.5px;font-weight:700;color:var(--muted)">Быстрая статистика</span>
+          <span style="font-size:10px;color:var(--faint)">всегда актуально</span>
+        </div>
+        <div class="kpis" id="quickKpis" style="margin-top:0;gap:8px;grid-template-columns:repeat(3,1fr)"></div>
+      </div>
+
       <div class="seg" id="periodSeg" data-value="month">
         <button class="seg-btn on" data-value="month">Этот месяц</button>
         <button class="seg-btn" data-value="prev">Прошлый</button>
@@ -229,6 +320,16 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
       </div>
       <!-- Мини-сводка сетки -->
       <div class="kpis" id="gridKpis"></div>
+
+      <!-- Сегодня в этой сетке — красиво и отдельно -->
+      <div class="panel" style="margin-top:10px; padding:14px 16px; border-left: 4px solid var(--grid-current, var(--a1))">
+        <div class="panel-h" style="margin-bottom:8px">
+          <h2 style="font-size:14px">Сегодня</h2>
+          <span class="hint">в сетке</span>
+        </div>
+        <div class="kpis" id="gridTodayKpis" style="margin-top:0; gap:10px; grid-template-columns:1fr 1fr"></div>
+      </div>
+
       <!-- Помесячно сетки -->
       <div class="panel"><div class="panel-h"><h2>Помесячно</h2><span class="hint">6 мес.</span></div><div id="gridMonthly"></div></div>
       <!-- Продажи сетки -->
@@ -373,6 +474,46 @@ function hideLoader(){
   l.classList.add('fade');setTimeout(()=>l.style.display='none',420);
 }
 
+// ========== THEME SWITCHER ==========
+let currentTheme = 'dark';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  if (theme === 'light') {
+    document.body.classList.add('theme-light');
+  } else {
+    document.body.classList.remove('theme-light');
+  }
+  // Save to localStorage immediately (fast)
+  try { localStorage.setItem('theme', theme); } catch(e){}
+}
+
+function initTheme() {
+  // Priority: settings from Supabase > localStorage > system > dark
+  let saved = null;
+  try {
+    saved = localStorage.getItem('theme');
+  } catch(e){}
+  if (!saved && state.settings && state.settings.theme) {
+    saved = state.settings.theme;
+  }
+  if (!saved) {
+    // fallback to system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      saved = 'light';
+    }
+  }
+  applyTheme(saved || 'dark');
+}
+
+// Call after renderAll / settings load
+function saveThemeToSettings(theme) {
+  if (!state.settings) state.settings = {};
+  state.settings.theme = theme;
+  // fire and forget to Supabase
+  sbUpsertSettings({id:1, theme}).catch(()=>{});
+}
+
 const IC={
   in:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>',
   out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>',
@@ -400,9 +541,16 @@ async function loadAll(){
     state.expenses = expenses||[];
     try{
       const stArr = await sbFetch('settings',{params:{limit:'1'}});
-      if(stArr&&stArr.length) state.settings={brand:stArr[0].brand||'Моя сеть',currency:stArr[0].currency||'₽'};
+      if(stArr&&stArr.length) {
+        state.settings = {
+          brand: stArr[0].brand || 'Моя сеть',
+          currency: stArr[0].currency || '₽',
+          theme: stArr[0].theme || 'dark'
+        };
+      }
     }catch(e){}
     renderAll();
+    initTheme();
     hideLoader();
   }catch(e){
     hideLoader();
@@ -480,15 +628,68 @@ function opRow(o){
 
 // ====== DASHBOARD ======
 function renderDash(){
-  const sP=state.sales.filter(s=>inPeriod(s.date));
-  const eP=state.expenses.filter(e=>inPeriod(e.date)&&!e.grid_id); // общие расходы без сетки
+  // ===== Быстрая статистика (всегда, независимо от периода) + разделение paid / pending =====
+  const isPending = s => (s.status || 'paid') === 'pending';
+  const todayStr = today();
+  const nowD = new Date();
+  const weekStartD = new Date(nowD.getFullYear(), nowD.getMonth(), nowD.getDate() - 6);
+  const weekStartStr = weekStartD.toISOString().slice(0,10);
+
+  const salesToday = state.sales.filter(s => String(s.date||'').slice(0,10) === todayStr);
+  const salesWeek  = state.sales.filter(s => { const d=String(s.date||'').slice(0,10); return d >= weekStartStr && d <= todayStr; });
+  const salesAll   = state.sales;
+
+  const paidToday = salesToday.filter(s => !isPending(s));
+  const pendToday = salesToday.filter(isPending);
+  const paidWeek  = salesWeek.filter(s => !isPending(s));
+  const pendWeek  = salesWeek.filter(isPending);
+  const paidAll   = salesAll.filter(s => !isPending(s));
+  const pendAll   = salesAll.filter(isPending);
+
+  const revTodayPaid = paidToday.reduce((a,b)=>a+(+b.amount||0),0);
+  const revTodayPend = pendToday.reduce((a,b)=>a+(+b.amount||0),0);
+  const revWeekPaid  = paidWeek.reduce((a,b)=>a+(+b.amount||0),0);
+  const revWeekPend  = pendWeek.reduce((a,b)=>a+(+b.amount||0),0);
+  const revAllPaid   = paidAll.reduce((a,b)=>a+(+b.amount||0),0);
+  const revAllPend   = pendAll.reduce((a,b)=>a+(+b.amount||0),0);
+
+  // Основной период (только оплаченные считаются в доход/прибыль)
+  const sP = state.sales.filter(s=>inPeriod(s.date));
+  const sPPaid = sP.filter(s => !isPending(s));
+  const sPPend = sP.filter(isPending);
+
+  const eP=state.expenses.filter(e=>inPeriod(e.date)&&!e.grid_id);
   const ePAll=state.expenses.filter(e=>inPeriod(e.date));
-  const rev=sP.reduce((a,b)=>a+(+b.amount||0),0);
-  const exp=ePAll.reduce((a,b)=>a+(+b.amount||0),0);
-  const totalComm=sP.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
-  const netRev=rev-totalComm;
-  const profit=netRev-exp,cnt=sP.length;
-  $('kpis').innerHTML=kpi('rev','Доход (всего)',money(rev),cnt?cnt+' прод.':'нет продаж')+kpi('rev','Мой доход',money(netRev),totalComm>0?'комиссии: −'+money(totalComm):'без комиссий')+kpi('exp','Расход',money(exp),ePAll.length?ePAll.length+' опер.':'нет расходов')+kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус')+' за период');
+  const rev = sPPaid.reduce((a,b)=>a+(+b.amount||0),0);
+  const exp = ePAll.reduce((a,b)=>a+(+b.amount||0),0);
+  const totalComm = sPPaid.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
+  const netRev = rev - totalComm;
+  const profit = netRev - exp;
+  const paidCnt = sPPaid.length;
+  const pendCnt = sPPend.length;
+  const pendAmt = sPPend.reduce((a,b)=>a+(+b.amount||0),0);
+
+  $('kpis').innerHTML =
+    kpi('rev','Доход (всего)', money(rev),
+        (paidCnt ? paidCnt+' прод.' : 'нет продаж') + (pendAmt>0 ? ` · +ожидает ${money(pendAmt)}` : '')) +
+    kpi('rev','Мой доход', money(netRev),
+        totalComm>0 ? 'комиссии: −'+money(totalComm) : 'без комиссий') +
+    kpi('exp','Расход', money(exp),
+        ePAll.length ? ePAll.length+' опер.' : 'нет расходов') +
+    kpi('profit'+(profit<0?' neg':''), 'Прибыль', money(profit),
+        (profit>=0?'плюс':'минус')+' за период');
+
+  // Рендер быстрых KPI — значение = оплачено, в подписи показываем ожидает отдельно
+  const mkSub = (paidArr, pendArr, pendAmtVal) => {
+    let s = paidArr.length ? paidArr.length+' прод.' : 'нет продаж';
+    if (pendAmtVal > 0) s += ` · +ожидает ${money(pendAmtVal)}`;
+    return s;
+  };
+
+  $('quickKpis').innerHTML =
+    kpi('rev','Сегодня', money(revTodayPaid), mkSub(paidToday, pendToday, revTodayPend)) +
+    kpi('rev','За неделю', money(revWeekPaid), mkSub(paidWeek, pendWeek, revWeekPend)) +
+    kpi('rev','Всего', money(revAllPaid), mkSub(paidAll, pendAll, revAllPend));
 
   // По сеткам
   const gridMap={};
@@ -551,16 +752,44 @@ function renderGridPage(){
 
   $('gridPageSub').textContent=gridChs.length+' кан. · '+sales.length+' продаж';
 
-  // KPI
-  const rev=sales.reduce((a,b)=>a+(+b.amount||0),0);
-  const exp=exps.reduce((a,b)=>a+(+b.amount||0),0);
-  const totalComm=sales.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
-  const netRev=rev-totalComm;
-  const profit=netRev-exp;
+  // KPI (только оплаченные в основные цифры + отдельно показываем ожидает)
+  const isPendingG = s => (s.status || 'paid') === 'pending';
+  const salesPaid = sales.filter(s => !isPendingG(s));
+  const salesPend = sales.filter(isPendingG);
+  const revPaid = salesPaid.reduce((a,b)=>a+(+b.amount||0),0);
+  const pendAmtG = salesPend.reduce((a,b)=>a+(+b.amount||0),0);
+  const exp = exps.reduce((a,b)=>a+(+b.amount||0),0);
+  const totalComm = salesPaid.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
+  const netRev = revPaid - totalComm;
+  const profit = netRev - exp;
+
+  const subPaid = salesPaid.length ? salesPaid.length+' прод.' : 'нет продаж';
+  const subWithPend = pendAmtG > 0 ? subPaid + ` · +ожидает ${money(pendAmtG)}` : subPaid;
+
   $('gridKpis').innerHTML=
-    kpi('rev','Доход',money(rev),sales.length?sales.length+' прод.':'нет продаж',grid.color)+
-    kpi('exp','Расход',money(exp),exps.length?exps.length+' расходов':'нет расходов')+
-    kpi('profit'+(profit<0?' neg':''),'Прибыль',money(profit),(profit>=0?'плюс':'минус'));
+    kpi('rev','Доход', money(revPaid), subWithPend, grid.color) +
+    kpi('exp','Расход', money(exp), exps.length ? exps.length+' расходов' : 'нет расходов') +
+    kpi('profit'+(profit<0?' neg':''), 'Прибыль', money(profit), (profit>=0?'плюс':'минус'));
+
+  // ===== Сегодня в сетке (отдельный красивый блок) =====
+  const todayStr = today();
+  const gridSalesToday = sales.filter(s => String(s.date||'').slice(0,10) === todayStr);
+  const gridPaidToday = gridSalesToday.filter(s => !isPendingG(s));
+  const gridPendToday = gridSalesToday.filter(isPendingG);
+
+  const revTodayPaid = gridPaidToday.reduce((a,b)=>a+(+b.amount||0),0);
+  const pendTodayAmt = gridPendToday.reduce((a,b)=>a+(+b.amount||0),0);
+  const pendTodayCnt = gridPendToday.length;
+
+  // Красивый акцент слева панели "Сегодня"
+  const todayPanel = document.querySelector('#s-grid .panel[style*="border-left"]');
+  if (todayPanel) todayPanel.style.borderLeftColor = grid.color;
+
+  $('gridTodayKpis').innerHTML =
+    kpi('rev', 'Доход сегодня', money(revTodayPaid),
+        gridPaidToday.length ? gridPaidToday.length + ' прод.' : 'нет продаж', grid.color) +
+    kpi('rev', 'Ожидает оплаты', money(pendTodayAmt),
+        pendTodayCnt ? pendTodayCnt + ' продаж' : 'нет ожиданий');
 
   // Помесячно
   const now=new Date(),months=[];
@@ -792,9 +1021,16 @@ async function delRow(table,id,msg){
 
 // ====== SETTINGS ======
 function openSettings(){
+  const currentThemeVal = (state.settings && state.settings.theme) || currentTheme || 'dark';
   openSheet(sheetHead('Настройки')+
     '<div class="field"><label>Название сети</label><input id="set_brand" type="text" value="'+esc(state.settings.brand)+'"></div>'+
     '<div class="field"><label>Валюта (символ)</label><input id="set_cur" type="text" maxlength="4" value="'+esc(state.settings.currency)+'"></div>'+
+    '<div class="field"><label>Тема оформления</label>'+
+      '<div class="seg" id="set_theme" data-value="'+currentThemeVal+'">'+
+        '<button class="seg-btn'+(currentThemeVal==='dark'?' on':'')+'" data-value="dark">Тёмная</button>'+
+        '<button class="seg-btn'+(currentThemeVal==='light'?' on':'')+'" data-value="light">Светлая</button>'+
+      '</div>'+
+    '</div>'+
     '<button class="btn btn-primary" id="set_save" style="width:100%">Сохранить</button>'+
     '<div class="set-act" style="margin-top:18px">'+
       '<button class="set-btn" id="set_export">'+IC.download+' Экспорт данных (резервная копия)</button>'+
@@ -804,6 +1040,23 @@ function openSettings(){
     '<input type="file" id="set_file" accept="application/json,.json" style="display:none">'+
     '<p class="set-note">Данные в облачной базе Supabase — общие для всех устройств.</p>');
   bindClose();
+  bindSeg($('sheetInner'));
+
+  // Theme live preview
+  const themeSeg = $('set_theme');
+  if (themeSeg) {
+    themeSeg.addEventListener('click', (e) => {
+      const btn = e.target.closest('.seg-btn');
+      if (!btn) return;
+      const newTheme = btn.dataset.value;
+      applyTheme(newTheme);
+      // update active state
+      themeSeg.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      themeSeg.dataset.value = newTheme;
+    });
+  }
+
   $('set_save').addEventListener('click',saveSettings);
   $('set_export').addEventListener('click',exportData);
   $('set_import').addEventListener('click',()=>$('set_file').click());
@@ -811,10 +1064,18 @@ function openSettings(){
   $('set_clear').addEventListener('click',clearAll);
 }
 async function saveSettings(){
-  const brand=val('set_brand').trim()||'Моя сеть',currency=val('set_cur').trim()||'₽';
+  const brand=val('set_brand').trim()||'Моя сеть';
+  const currency=val('set_cur').trim()||'₽';
+  const themeSeg = $('set_theme');
+  const theme = themeSeg ? themeSeg.dataset.value : currentTheme;
+
   try{
-    await sbUpsertSettings({id:1,brand,currency,updated_at:new Date().toISOString()});
-    state.settings={brand,currency};renderAll();closeSheet();toast('Сохранено');
+    await sbUpsertSettings({id:1, brand, currency, theme, updated_at:new Date().toISOString()});
+    state.settings = {brand, currency, theme};
+    applyTheme(theme);
+    renderAll();
+    closeSheet();
+    toast('Сохранено');
   }catch(e){toast('Ошибка: '+e.message,true);}
 }
 function exportData(){
