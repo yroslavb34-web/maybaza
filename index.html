@@ -61,6 +61,17 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .grid-tab .dot{width:7px;height:7px;border-radius:50%;flex:none}
 .grid-tab.on{color:#06121f;border-color:transparent}
 .grid-tab:active{transform:scale(.95)}
+.grid-tab-add{border:1px dashed var(--stroke-2);background:transparent;color:var(--muted);font-size:14px;font-weight:700;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;transition:.18s}
+.grid-tab-add:active{transform:scale(.9)}
+.grid-tab-edit{border:0;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.color-swatches{display:flex;flex-wrap:wrap;gap:9px;margin-top:2px}
+.swatch{width:32px;height:32px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:.15s}
+.swatch.on{border-color:#fff;transform:scale(1.12);box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+.grid-manage-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--stroke)}
+.grid-manage-row:last-child{border-bottom:0}
+.grid-manage-row .gmr-dot{width:11px;height:11px;border-radius:50%;flex:none}
+.grid-manage-row .gmr-name{flex:1;font-size:14px;font-weight:600}
+.grid-manage-row button{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;display:flex}
 
 .screen{display:none;padding:18px 16px 8px;animation:fade .35s ease both}
 .screen.on{display:block}
@@ -424,13 +435,43 @@ async function sbUpsertSettings(body){
 // ======================================================
 // КОНФИГ СЕТОК
 // ======================================================
-const GRIDS = [
+const DEFAULT_GRIDS = [
   { id: 'moskva',   name: 'Сетка Москва',   color: '#38bdf8', short: 'МСК' },
   { id: 'restwork', name: 'RestWork',        color: '#a78bfa', short: 'RW'  },
   { id: 'udalenka', name: 'Сетка Удалёнка', color: '#34d399', short: 'УДЛ' },
 ];
+const GRID_COLORS = ['#38bdf8','#a78bfa','#34d399','#fbbf24','#fb7185','#f472b6','#22d3ee','#facc15','#4ade80','#f97316'];
 
+let GRIDS = DEFAULT_GRIDS.slice();
 let activeGridId = GRIDS[0].id;
+
+function slugifyRu(str){
+  const map={а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'};
+  return String(str).toLowerCase().split('').map(c=>map[c]!==undefined?map[c]:c).join('')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30)||'setka';
+}
+function uniqueGridId(name){
+  const base=slugifyRu(name);
+  let id=base, n=2;
+  while(GRIDS.find(g=>g.id===id)){ id=base+'-'+n; n++; }
+  return id;
+}
+async function loadGrids(){
+  try{
+    const grids = await sbFetch('grids',{params:{order:'created_at.asc'}});
+    if(grids && grids.length){
+      GRIDS = grids.map(g=>({id:g.id,name:g.name,color:g.color||'#38bdf8',short:g.short||String(g.name).slice(0,3).toUpperCase()}));
+    } else {
+      GRIDS = DEFAULT_GRIDS.slice();
+      // Первый запуск — сохраняем стандартные сетки в базу, чтобы они появились в таблице grids
+      sbInsert('grids', DEFAULT_GRIDS.map(g=>({id:g.id,name:g.name,color:g.color,short:g.short}))).catch(()=>{});
+    }
+  }catch(e){
+    // Таблица grids ещё не создана в Supabase — работаем на стандартных сетках без сохранения
+    GRIDS = DEFAULT_GRIDS.slice();
+  }
+  if(!GRIDS.find(g=>g.id===activeGridId)) activeGridId = GRIDS[0] ? GRIDS[0].id : null;
+}
 
 // ======================================================
 const $=id=>document.getElementById(id);
@@ -526,11 +567,13 @@ const IC={
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
 };
 
 // ====== DATA LOADING ======
 async function loadAll(){
   try{
+    await loadGrids();
     const [channels, sales, expenses] = await Promise.all([
       sbFetch('channels',{params:{order:'created_at.asc'}}),
       sbFetch('sales',{params:{order:'date.desc'}}),
@@ -582,14 +625,18 @@ function buildGridTabs(){
       <span class="dot" style="background:${g.color};${g.id===activeGridId?'background:#06121f;':''}"></span>
       ${esc(g.name)}
     </button>
-  `).join('');
+  `).join('') + '<button class="grid-tab-add" id="gridTabAdd" title="Создать сетку">+</button>'
+    + '<button class="grid-tab-edit" id="gridTabEdit" title="Управление сетками">'+IC.settings+'</button>';
   wrap.querySelectorAll('.grid-tab').forEach(btn=>{
     btn.addEventListener('click',()=>{
       activeGridId=btn.dataset.gid;
       buildGridTabs();
       renderGridPage();
+      renderCh();
     });
   });
+  $('gridTabAdd').addEventListener('click',()=>openGridForm(null));
+  $('gridTabEdit').addEventListener('click',openGridManage);
 }
 
 function renderAll(){
@@ -892,6 +939,80 @@ async function saveChannel(id){
   }catch(e){setBtnReset(btn,'Сохранить');toast('Ошибка: '+e.message, true);}
 }
 
+// ====== GRID (СЕТКА) FORM ======
+function openGridForm(id){
+  const ed = id ? GRIDS.find(g=>g.id===id) : null;
+  const usedColor = ed ? ed.color : GRID_COLORS[GRIDS.length % GRID_COLORS.length];
+  openSheet(sheetHead(ed?'Сетка':'Новая сетка')+
+    '<div class="field"><label>Название сетки</label><input id="gf_name" type="text" placeholder="Например: Регионы" value="'+(ed?esc(ed.name):'')+'"></div>'+
+    '<div class="field"><label>Короткое обозначение (необязательно)</label><input id="gf_short" type="text" maxlength="5" placeholder="напр. РГ" value="'+(ed?esc(ed.short||''):'')+'"></div>'+
+    '<div class="field"><label>Цвет</label><div class="color-swatches" id="gf_colors">'+
+      GRID_COLORS.map(c=>'<button type="button" class="swatch'+(c.toLowerCase()===String(usedColor).toLowerCase()?' on':'')+'" data-color="'+c+'" style="background:'+c+'"></button>').join('')+
+    '</div></div>'+
+    '<div class="sheet-foot">'+(ed?'<button class="btn btn-danger" id="gf_del">'+IC.trash+'</button>':'')+'<button class="btn btn-primary" id="gf_save">Сохранить</button></div>');
+  bindClose();
+  let pickedColor = usedColor;
+  $('gf_colors').querySelectorAll('.swatch').forEach(sw=>sw.addEventListener('click',()=>{
+    $('gf_colors').querySelectorAll('.swatch').forEach(s=>s.classList.remove('on'));
+    sw.classList.add('on');
+    pickedColor = sw.dataset.color;
+  }));
+  $('gf_save').addEventListener('click',()=>saveGrid(id, ()=>pickedColor));
+  if(ed) $('gf_del').addEventListener('click',()=>delGrid(id));
+}
+async function saveGrid(id, getColor){
+  const btn=$('gf_save');
+  const name=val('gf_name').trim();
+  if(!name){toast('Введи название сетки', true);return;}
+  const color=getColor()||GRID_COLORS[0];
+  const short=val('gf_short').trim().toUpperCase()||name.slice(0,3).toUpperCase();
+  setBtnLoading(btn,'Сохраняю…');
+  try{
+    if(id){
+      await sbUpdate('grids', id, {name, color, short});
+      const g=GRIDS.find(x=>x.id===id);
+      if(g){ g.name=name; g.color=color; g.short=short; }
+    } else {
+      const newId=uniqueGridId(name);
+      await sbInsert('grids', {id:newId, name, color, short});
+      GRIDS.push({id:newId, name, color, short});
+      activeGridId=newId;
+    }
+    renderAll();
+    closeSheet();
+    toast(id?'Сетка обновлена':'Сетка создана');
+  }catch(e){
+    setBtnReset(btn,'Сохранить');
+    toast('Ошибка: '+e.message+'. Возможно, в Supabase ещё не создана таблица grids — см. инструкцию.', true);
+  }
+}
+async function delGrid(id){
+  if(GRIDS.length<=1){toast('Нельзя удалить последнюю сетку', true);return;}
+  const g=GRIDS.find(x=>x.id===id);
+  if(!confirm('Удалить сетку "'+(g?g.name:'')+'"? Каналы, продажи и расходы этой сетки останутся, но потеряют привязку к сетке.'))return;
+  try{
+    await sbDelete('grids', id);
+    GRIDS=GRIDS.filter(x=>x.id!==id);
+    if(activeGridId===id) activeGridId=GRIDS[0].id;
+    await reload('channels');
+    renderAll();
+    closeSheet();
+    toast('Сетка удалена');
+  }catch(e){toast('Ошибка: '+e.message, true);}
+}
+function openGridManage(){
+  openSheet(sheetHead('Управление сетками')+
+    '<div id="gridManageList">'+
+    GRIDS.map(g=>'<div class="grid-manage-row"><span class="gmr-dot" style="background:'+g.color+'"></span><span class="gmr-name">'+esc(g.name)+'</span><button data-gid="'+g.id+'" class="gmr-edit">'+IC.settings+'</button></div>').join('')+
+    '</div>'+
+    '<button class="btn btn-primary" id="gm_add" style="width:100%;margin-top:14px">+ Создать новую сетку</button>');
+  bindClose();
+  $('gridManageList').querySelectorAll('.gmr-edit').forEach(btn=>{
+    btn.addEventListener('click',()=>openGridForm(btn.dataset.gid));
+  });
+  $('gm_add').addEventListener('click',()=>openGridForm(null));
+}
+
 // ====== SALE FORM ======
 // preGridId — предустановленная сетка (когда открываем с экрана сетки)
 function openSaleForm(id, preGridId){
@@ -1033,6 +1154,7 @@ function openSettings(){
     '</div>'+
     '<button class="btn btn-primary" id="set_save" style="width:100%">Сохранить</button>'+
     '<div class="set-act" style="margin-top:18px">'+
+      '<button class="set-btn" id="set_grids">'+IC.settings+' Управление сетками</button>'+
       '<button class="set-btn" id="set_export">'+IC.download+' Экспорт данных (резервная копия)</button>'+
       '<button class="set-btn" id="set_import">'+IC.upload+' Импорт из файла</button>'+
       '<button class="set-btn danger" id="set_clear">'+IC.trash+' Очистить все данные</button>'+
@@ -1058,6 +1180,7 @@ function openSettings(){
   }
 
   $('set_save').addEventListener('click',saveSettings);
+  $('set_grids').addEventListener('click',openGridManage);
   $('set_export').addEventListener('click',exportData);
   $('set_import').addEventListener('click',()=>$('set_file').click());
   $('set_file').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0]);});
