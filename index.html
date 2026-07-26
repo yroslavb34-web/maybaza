@@ -72,6 +72,20 @@ body::after{width:560px;height:560px;bottom:-200px;right:-160px;background:radia
 .grid-manage-row .gmr-dot{width:11px;height:11px;border-radius:50%;flex:none}
 .grid-manage-row .gmr-name{flex:1;font-size:14px;font-weight:600}
 .grid-manage-row button{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;display:flex}
+#dateLookupDay,#dateLookupMonth{font-family:inherit;font-size:15px;color:var(--txt);background:rgba(10,16,32,.9);border:1px solid var(--stroke);border-radius:13px;padding:12px 14px;outline:none;color-scheme:dark;-webkit-appearance:none;appearance:none}
+#dateLookupDay:focus,#dateLookupMonth:focus{border-color:var(--a2);box-shadow:0 0 0 3px rgba(129,140,248,.16)}
+.dl-result{background:var(--glass);border:1px solid var(--stroke);border-radius:14px;padding:14px 16px}
+.dl-label{font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:10px;color:var(--txt)}
+.dl-rows{display:flex;flex-direction:column;gap:8px}
+.dl-row{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.dl-row .dl-k{color:var(--muted)}
+.dl-row .dl-v{font-weight:700;font-family:var(--font-d);font-size:13px}
+.dl-v.pos{color:var(--pos)}
+.dl-v.neg{color:var(--neg)}
+.month-hist-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--stroke);font-size:13.5px}
+.month-hist-row:last-child{border-bottom:0}
+.month-hist-row .mh-name{color:var(--txt);font-weight:600;text-transform:capitalize}
+.month-hist-row .mh-amt{font-weight:700;font-family:var(--font-d);color:var(--a1)}
 
 .screen{display:none;padding:18px 16px 8px;animation:fade .35s ease both}
 .screen.on{display:block}
@@ -305,7 +319,25 @@ body.theme-light .field input[type="date"] {
           <span style="font-size:12.5px;font-weight:700;color:var(--muted)">Быстрая статистика</span>
           <span style="font-size:10px;color:var(--faint)">всегда актуально</span>
         </div>
-        <div class="kpis" id="quickKpis" style="margin-top:0;gap:8px;grid-template-columns:repeat(3,1fr)"></div>
+        <div class="kpis" id="quickKpis" style="margin-top:0;gap:8px;grid-template-columns:repeat(2,1fr)"></div>
+      </div>
+
+      <!-- Доход за произвольную дату / месяц -->
+      <div class="panel" style="margin-top:0">
+        <div class="panel-h"><h2>Доход за дату</h2></div>
+        <div class="seg" id="dateModeSeg" data-value="day" style="margin-bottom:10px">
+          <button class="seg-btn on" data-value="day">День</button>
+          <button class="seg-btn" data-value="month">Месяц</button>
+        </div>
+        <div id="dateLookupDayWrap" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+          <input type="date" id="dateLookupDay" style="flex:1">
+          <button class="set-btn" id="dlYesterday" style="width:auto;white-space:nowrap;padding:10px 12px">Вчера</button>
+          <button class="set-btn" id="dlToday" style="width:auto;white-space:nowrap;padding:10px 12px">Сегодня</button>
+        </div>
+        <div id="dateLookupMonthWrap" style="display:none;margin-bottom:12px">
+          <input type="month" id="dateLookupMonth" style="width:100%">
+        </div>
+        <div id="dateLookupResult"></div>
       </div>
 
       <div class="seg" id="periodSeg" data-value="month">
@@ -316,7 +348,7 @@ body.theme-light .field input[type="date"] {
       <div class="kpis" id="kpis"></div>
       <div class="panel"><div class="panel-h"><h2>Доход по сеткам</h2><span class="hint" id="byGridHint"></span></div><div id="byGrid"></div></div>
       <div class="panel"><div class="panel-h"><h2>Доход по каналам</h2><span class="hint" id="byChHint"></span></div><div id="byCh"></div></div>
-      <div class="panel"><div class="panel-h"><h2>Помесячно</h2><span class="hint">6 мес.</span></div><div id="monthly"></div></div>
+      <div class="panel"><div class="panel-h"><h2>Помесячно</h2><span class="hint">6 мес.</span></div><div id="monthly"></div><div id="monthlyList" style="margin-top:12px"></div></div>
       <div class="panel"><div class="panel-h"><h2>Последние операции</h2></div><div id="recent"></div></div>
     </section>
 
@@ -489,6 +521,22 @@ const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
 function money(n){const v=Math.round(Number(n)||0);return(v<0?'−':'')+nf.format(Math.abs(v))+'\u202f'+state.settings.currency;}
 function parseAmt(s){return Math.abs(parseFloat(String(s).replace(/\s/g,'').replace(',','.')))||0;}
 function today(){return new Date().toISOString().slice(0,10);}
+function yesterday(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
+function fmtDateLong(ds){
+  if(!ds) return '';
+  const p=String(ds).slice(0,10).split('-');
+  const d=new Date(+p[0],+p[1]-1,+p[2]);
+  let s=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  return s.replace(/\s*г\.?$/,'');
+}
+function fmtMonthLong(ym){
+  if(!ym) return '';
+  const p=String(ym).slice(0,7).split('-');
+  const d=new Date(+p[0],+p[1]-1,1);
+  let s=d.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  s=s.replace(/\s*г\.?$/,'');
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
 function fmtDate(d){if(!d)return '';const p=String(d).slice(0,10).split('-');return p[2]+'.'+p[1]+'.'+p[0].slice(2);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function chName(id){const c=state.channels.find(x=>x.id===id);return c?c.name:'—';}
@@ -643,6 +691,7 @@ function renderAll(){
   $('brandName').textContent=state.settings.brand||'Моя сеть';
   buildGridTabs();
   renderDash();
+  renderDateLookup();
   renderGridPage();
   renderCh();
 }
@@ -678,16 +727,20 @@ function renderDash(){
   // ===== Быстрая статистика (всегда, независимо от периода) + разделение paid / pending =====
   const isPending = s => (s.status || 'paid') === 'pending';
   const todayStr = today();
+  const yestStr = yesterday();
   const nowD = new Date();
   const weekStartD = new Date(nowD.getFullYear(), nowD.getMonth(), nowD.getDate() - 6);
   const weekStartStr = weekStartD.toISOString().slice(0,10);
 
   const salesToday = state.sales.filter(s => String(s.date||'').slice(0,10) === todayStr);
+  const salesYest  = state.sales.filter(s => String(s.date||'').slice(0,10) === yestStr);
   const salesWeek  = state.sales.filter(s => { const d=String(s.date||'').slice(0,10); return d >= weekStartStr && d <= todayStr; });
   const salesAll   = state.sales;
 
   const paidToday = salesToday.filter(s => !isPending(s));
   const pendToday = salesToday.filter(isPending);
+  const paidYest  = salesYest.filter(s => !isPending(s));
+  const pendYest  = salesYest.filter(isPending);
   const paidWeek  = salesWeek.filter(s => !isPending(s));
   const pendWeek  = salesWeek.filter(isPending);
   const paidAll   = salesAll.filter(s => !isPending(s));
@@ -695,6 +748,8 @@ function renderDash(){
 
   const revTodayPaid = paidToday.reduce((a,b)=>a+(+b.amount||0),0);
   const revTodayPend = pendToday.reduce((a,b)=>a+(+b.amount||0),0);
+  const revYestPaid  = paidYest.reduce((a,b)=>a+(+b.amount||0),0);
+  const revYestPend  = pendYest.reduce((a,b)=>a+(+b.amount||0),0);
   const revWeekPaid  = paidWeek.reduce((a,b)=>a+(+b.amount||0),0);
   const revWeekPend  = pendWeek.reduce((a,b)=>a+(+b.amount||0),0);
   const revAllPaid   = paidAll.reduce((a,b)=>a+(+b.amount||0),0);
@@ -735,6 +790,7 @@ function renderDash(){
 
   $('quickKpis').innerHTML =
     kpi('rev','Сегодня', money(revTodayPaid), mkSub(paidToday, pendToday, revTodayPend)) +
+    kpi('rev','Вчера', money(revYestPaid), mkSub(paidYest, pendYest, revYestPend)) +
     kpi('rev','За неделю', money(revWeekPaid), mkSub(paidWeek, pendWeek, revWeekPend)) +
     kpi('rev','Всего', money(revAllPaid), mkSub(paidAll, pendAll, revAllPend));
 
@@ -767,6 +823,9 @@ function renderDash(){
   state.expenses.forEach(e=>{const k=String(e.date).slice(0,7);if(mi[k])mi[k].exp+=(+e.amount||0);});
   const mMax=Math.max(1,...months.map(m=>Math.max(m.rev,m.exp)));
   $('monthly').innerHTML='<div class="chart"><div class="chart-bars">'+months.map(m=>'<div class="month"><div class="cols"><div class="col rev" style="height:'+(m.rev?Math.max(3,m.rev/mMax*100):0)+'%"></div><div class="col exp" style="height:'+(m.exp?Math.max(3,m.exp/mMax*100):0)+'%"></div></div><div class="m-label">'+m.label+'</div></div>').join('')+'</div><div class="legend"><span class="lg rev">Доход</span><span class="lg exp">Расход</span></div></div>';
+  $('monthlyList').innerHTML = months.slice().reverse().map(m=>
+    '<div class="month-hist-row"><span class="mh-name">'+esc(fmtMonthLong(m.key))+'</span><span class="mh-amt">'+money(m.rev)+'</span></div>'
+  ).join('');
 
   // Последние операции
   const ops=[];
@@ -1240,6 +1299,59 @@ async function clearAll(){
   }catch(e){toast('Ошибка: '+e.message,true);}
 }
 
+// ====== ДОХОД ЗА ДАТУ / МЕСЯЦ ======
+let dateLookupMode = 'day';
+function renderDateLookup(){
+  const isPending = s => (s.status || 'paid') === 'pending';
+  let label, sales, exps;
+  if(dateLookupMode==='day'){
+    const dateStr = val('dateLookupDay') || today();
+    sales = state.sales.filter(s=>String(s.date||'').slice(0,10)===dateStr);
+    exps  = state.expenses.filter(e=>String(e.date||'').slice(0,10)===dateStr);
+    label = fmtDateLong(dateStr);
+  } else {
+    const monStr = val('dateLookupMonth') || today().slice(0,7);
+    sales = state.sales.filter(s=>String(s.date||'').slice(0,7)===monStr);
+    exps  = state.expenses.filter(e=>String(e.date||'').slice(0,7)===monStr);
+    label = fmtMonthLong(monStr);
+  }
+  const paid = sales.filter(s=>!isPending(s));
+  const pend = sales.filter(isPending);
+  const rev = paid.reduce((a,b)=>a+(+b.amount||0),0);
+  const pendAmt = pend.reduce((a,b)=>a+(+b.amount||0),0);
+  const totalComm = paid.reduce((a,s)=>a+commission(s.amount,s.manager||'none'),0);
+  const netRev = rev-totalComm;
+  const exp = exps.reduce((a,b)=>a+(+b.amount||0),0);
+  const profit = netRev-exp;
+  $('dateLookupResult').innerHTML =
+    '<div class="dl-result"><div class="dl-label">'+esc(label)+'</div><div class="dl-rows">'+
+    '<div class="dl-row"><span class="dl-k">Доход (всего)</span><span class="dl-v pos">'+money(rev)+'</span></div>'+
+    '<div class="dl-row"><span class="dl-k">Мой доход (после комиссий)</span><span class="dl-v">'+money(netRev)+'</span></div>'+
+    (pendAmt>0?'<div class="dl-row"><span class="dl-k">Ожидает оплаты</span><span class="dl-v">'+money(pendAmt)+'</span></div>':'')+
+    '<div class="dl-row"><span class="dl-k">Расход</span><span class="dl-v neg">'+money(exp)+'</span></div>'+
+    '<div class="dl-row"><span class="dl-k">Прибыль</span><span class="dl-v '+(profit<0?'neg':'pos')+'">'+money(profit)+'</span></div>'+
+    '<div class="dl-row"><span class="dl-k">Продаж</span><span class="dl-v">'+sales.length+'</span></div>'+
+    '</div></div>';
+}
+function initDateLookup(){
+  $('dateLookupDay').value = yesterday();
+  $('dateLookupMonth').value = today().slice(0,7);
+  const modeSeg = $('dateModeSeg');
+  modeSeg.querySelectorAll('.seg-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    modeSeg.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    dateLookupMode = btn.dataset.value;
+    modeSeg.dataset.value = dateLookupMode;
+    $('dateLookupDayWrap').style.display = dateLookupMode==='day'?'flex':'none';
+    $('dateLookupMonthWrap').style.display = dateLookupMode==='month'?'block':'none';
+    renderDateLookup();
+  }));
+  $('dateLookupDay').addEventListener('change', renderDateLookup);
+  $('dateLookupMonth').addEventListener('change', renderDateLookup);
+  $('dlYesterday').addEventListener('click',()=>{ $('dateLookupDay').value=yesterday(); renderDateLookup(); });
+  $('dlToday').addEventListener('click',()=>{ $('dateLookupDay').value=today(); renderDateLookup(); });
+}
+
 // ====== EVENTS ======
 document.addEventListener('click',e=>{
   const row=e.target.closest('.row[data-id]');if(!row)return;
@@ -1263,6 +1375,7 @@ $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet();})
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();});
 
 // ====== INIT ======
+initDateLookup();
 loadAll();
 </script>
 </body>
